@@ -1,0 +1,166 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.mainLogo{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+  width: 70vh;
+  height: 60vh;
+  background: white;
+  padding: 1rem 1rem 1rem 1rem;
+}
+
+.headerClass{
+  margin: 2rem;
+  position: relative;
+  padding: 0;
+  border: 0.5px solid grey;
+  background: white;
+  border-radius: 10px;
+}
+
+.welcomeMessage{
+  text-align: center;
+}
+
+.adminMessage {
+  text-align: center;
+  color: red;
+  font-weight: bold;
+  font-family: "Fira Sans", sans-serif;
+}
+
+.user-home{
+  margin: 2rem;
+  position: relative;
+  padding: 3rem;
+  border: 0.5px solid grey;
+  background: white;
+  border-radius: 10px;
+}
+
+.admin-home{
+  margin: 2rem;
+  position: relative;
+  padding: 3rem;
+  border: 0.5px solid grey;
+  background: white;
+  border-radius: 10px;
+}
+
+.welcomehome{
+  background-image: url('./homepage.png');
+  position: fixed;
+  min-width: 100%;
+  min-height: 100%;
+  background-size: contain;
+  background-position: center;
+}
+
+.btn-btn-secondary {
+  /* Copy the properties from btn btn-primary */
+  display: inline-block;
+  font-weight: bold;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  user-select: none;
+  border: 1px solid transparent;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+  /* Set the desired color */
+  color: black;
+  background-color:  #01F9C6;
+  border-color:  #01F9C6;
+}
+
+.btn-btn-three {
+  /* Copy the properties from btn btn-primary */
+  display: inline-block;
+  font-weight: bold;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  user-select: none;
+  border: 1px solid transparent;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+  /* Set the desired color */
+  color: black;
+  font-family: sans-serif;
+  background-color:  #ade2e2;
+  border-color:  black;
+}
+
+.popup-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.popup-content p {
+  margin-bottom: 10px;
+}
+
+.popup-content button {
+  padding: 8px 16px;
+}
