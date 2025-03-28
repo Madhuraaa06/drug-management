@@ -12,7 +12,7 @@ contract Contacts {
     string Targetedmedicalcondition;
   }
 
-  constructor() public{
+  constructor() {
     //createContact('Gilead Sciences', 'Remdesivir', 'Remdesivir 50%', 'COVID-19');
   }
 

@@ -48,7 +48,7 @@ export default function AdminUpdate({ userData }) {
                 className="form-control"
                 placeholder="Enter Manufacturer Name"
                 value={manufacturerName}
-                readOnly
+                
               />
             </div>
             <div className="col">
@@ -58,7 +58,7 @@ export default function AdminUpdate({ userData }) {
                 className="form-control"
                 placeholder="Enter Drug Name"
                 value={drugName}
-                readOnly
+                
               />
             </div>
           </div>

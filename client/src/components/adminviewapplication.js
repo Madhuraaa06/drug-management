@@ -1,18 +1,14 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
-import "../App.css";
 
 export default function AdminApplicationView({ userData }) {
-
   const [data, setData] = useState([]);
-  const [drugDetails, setDrugDetails] = useState(null); // New state for drug details
+  const [drugDetails, setDrugDetails] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:5000/getApplication", {
-      method: "Get"
-    })
+    fetch("http://localhost:5000/getApplication", { method: "GET" })
       .then((res) => res.json())
       .then((data) => {
         console.log(data, "userData");
@@ -26,14 +22,11 @@ export default function AdminApplicationView({ userData }) {
       const data = await response.json();
 
       if (data.status === "ok") {
-        const { drugDescription, commonSideEffect, storageTemperature } = data.data;
-
-        // Set the drug details in state
         setDrugDetails({
-          drugName: drugName,
-          drugDescription: drugDescription,
-          commonSideEffect: commonSideEffect,
-          storageTemperature: storageTemperature
+          drugName,
+          drugDescription: data.data.drugDescription,
+          commonSideEffect: data.data.commonSideEffect,
+          storageTemperature: data.data.storageTemperature
         });
       } else {
         console.log("Error:", data.message);
@@ -47,91 +40,143 @@ export default function AdminApplicationView({ userData }) {
     window.localStorage.clear();
     window.location.href = "./sign-in";
   };
+
   return (
-    <div style={{ paddingTop: "64px" }} className="auth-wrapper">
-      <div className="container" style={{ maxWidth: "800px", backgroundColor: "white" }}>
-        <div className="row">
-          <div className="col-12">
-            <div style={{ paddingTop: "34px" }} className="table-container">
-              <h3>List of Apllications</h3>
-              <table style={{ width: "100%" }}>
-                <thead>
-                  <tr>
-                    <th style={{ textAlign: "center" }}>Manufacturer Name</th>
-                    <th style={{ textAlign: "center" }}>Drug Name</th>
-                  </tr>
-                </thead>
+    <div style={styles.authWrapper}>
+      <div style={styles.container}>
+        <h3 style={styles.heading}>List of Applications</h3>
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.tableHeader}>Manufacturer Name</th>
+              <th style={styles.tableHeader}>Drug Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((item, index) => (
+              <tr key={index} style={styles.tableRow}>
+                <td style={styles.tableCellBold}>{item.manufacturerName}</td>
+                <td>
+                  <button
+                    onClick={() => getDrugDetails(item.drugName)}
+                    style={styles.button}
+                  >
+                    {item.drugName}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-                <tbody>
-                  {data.map((item, index) => (
-                    <tr key={index}>
-                      <td style={{ textAlign: "center", fontWeight: "bold" }}>{item.manufacturerName}</td>
-                      {/* Render drug name as a link/button to get drug details */}
-                      <td>
-                        <button
-                          onClick={() => getDrugDetails(item.drugName)} className="btn-btn-three"
-                          style={{ display: "block", margin: "0 auto", width: "200px", height: "50px" }}
-                        >
-                          {item.drugName}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-
-              </table>
-              <br />
-              {/* Render the drug details */}
-
-              {drugDetails && (
-                <div>
-                  <h4>Drug Details for {drugDetails.drugName}</h4>
-                  <table>
-                    <tbody>
-                      <tr>
-                        <td>Drug Name:</td>
-                        <td>{drugDetails.drugName}</td>
-                      </tr>
-                      <tr>
-                        <td>Drug Description:</td>
-                        <td>{drugDetails.drugDescription}</td>
-                      </tr>
-                      <tr>
-                        <td>Common Side Effect:</td>
-                        <td>{drugDetails.commonSideEffect}</td>
-                      </tr>
-                      <tr>
-                        <td>Storage Temperature:</td>
-                        <td>{drugDetails.storageTemperature}</td>
-                      </tr>
-                      <tr>
-                        <td>Click here to get Clinical Trail Data </td>
-                        <td>
-                          <Link to={`/adhome/${encodeURIComponent(drugDetails.drugName)}`}>
-                            <FontAwesomeIcon icon={faPaperPlane} />
-                          </Link>
-                        </td>
-                      </tr>
-
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-
-
-
-              <br></br>
-              <br></br>
-              <button onClick={logOut} className="btn-btn-three">
-                Log Out
-              </button>
-              <br></br>
-            </div>
+        {drugDetails && (
+          <div style={styles.detailsContainer}>
+            <h4>Drug Details for {drugDetails.drugName}</h4>
+            <table>
+              <tbody>
+                <tr><td style={styles.detailLabel}>Drug Name:</td><td>{drugDetails.drugName}</td></tr>
+                <tr><td style={styles.detailLabel}>Description:</td><td>{drugDetails.drugDescription}</td></tr>
+                <tr><td style={styles.detailLabel}>Side Effects:</td><td>{drugDetails.commonSideEffect}</td></tr>
+                <tr><td style={styles.detailLabel}>Storage Temp:</td><td>{drugDetails.storageTemperature}</td></tr>
+                <tr>
+                  <td style={styles.detailLabel}>Clinical Trial Data:</td>
+                  <td>
+                    <Link to={`/adhome/${encodeURIComponent(drugDetails.drugName)}`}>
+                      <FontAwesomeIcon icon={faPaperPlane} style={styles.icon} />
+                    </Link>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </div>
+        )}
+
+        <button onClick={logOut} style={styles.logoutButton}>Log Out</button>
       </div>
     </div>
   );
 }
 
+const styles = {
+  authWrapper: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "100vh",
+    backgroundColor: "#f4f4f4"
+  },
+  container: {
+    maxWidth: "900px",
+    padding: "20px",
+    backgroundColor: "white",
+    borderRadius: "10px",
+    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)"
+  },
+  heading: {
+    textAlign: "center",
+    fontWeight: "bold",
+    marginBottom: "20px",
+    color: "#333"
+  },
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    marginTop: "20px"
+  },
+  tableHeader: {
+    backgroundColor: "#007bff",
+    color: "white",
+    padding: "12px",
+    textAlign: "center"
+  },
+  tableRow: {
+    backgroundColor: "#f9f9f9"
+  },
+  tableCellBold: {
+    textAlign: "center",
+    fontWeight: "bold",
+    padding: "10px"
+  },
+  button: {
+    display: "block",
+    margin: "0 auto",
+    width: "200px",
+    height: "40px",
+    backgroundColor: "#007bff",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    transition: "0.3s"
+  },
+  buttonHover: {
+    backgroundColor: "#0056b3"
+  },
+  detailsContainer: {
+    marginTop: "20px",
+    padding: "15px",
+    border: "1px solid #ddd",
+    borderRadius: "8px",
+    backgroundColor: "#f9f9f9"
+  },
+  detailLabel: {
+    fontWeight: "bold",
+    paddingRight: "10px"
+  },
+  icon: {
+    color: "#007bff",
+    fontSize: "16px"
+  },
+  logoutButton: {
+    display: "block",
+    width: "100%",
+    padding: "12px",
+    marginTop: "15px",
+    backgroundColor: "#dc3545",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    transition: "0.3s"
+  }
+};

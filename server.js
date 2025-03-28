@@ -1,13 +1,16 @@
 const express = require('express');
-const app = express();
 const cors = require('cors');
-const routes = require('./routes');
-const Web3 = require('web3');
-const multer = require('multer');
-const artifacts = require('./build/contracts/Contacts.json');
 const mongoose = require('mongoose');
+const multer = require('multer');
+const Web3 = require('web3');
+const routes = require('./routes');
+const artifacts = require('./build/contracts/Contacts.json');
 require('dotenv').config();
 
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
@@ -21,17 +24,17 @@ if (typeof web3 !== 'undefined') {
 }
 
 // Get network ID and contract address
-const networkId = '5777'; // Ganache default network ID
+const networkId = '1337'; // Ganache default network ID
 const deployedNetwork = artifacts.networks[networkId];
 
 if (!deployedNetwork) {
-    throw new Error('Contract not deployed to detected network');
+    throw new Error('❌ Contract not deployed to detected network');
 }
 
 const CONTACT_ADDRESS = deployedNetwork.address;
 const CONTACT_ABI = artifacts.abi;
 
-// MongoDB Connection with retry logic
+// MongoDB Connection with Retry Logic
 const connectDB = async (retries = 5) => {
     try {
         await mongoose.connect(process.env.MONGODB_URI, {
@@ -39,31 +42,35 @@ const connectDB = async (retries = 5) => {
             connectTimeoutMS: 10000,
             socketTimeoutMS: 45000,
         });
-        console.log('MongoDB Connected Successfully');
+
+        console.log('✅ MongoDB Connected Successfully');
     } catch (err) {
-        console.error('MongoDB Connection Error:', err.message);
+        console.error(`❌ MongoDB Connection Error: ${err.message}`);
+        console.error(`🛑 Stack Trace: ${err.stack}`);
+
         if (retries > 0) {
-            console.log(`Retrying connection... (${retries} attempts left)`);
+            console.log(`🔁 Retrying connection... (${retries} attempts left)`);
             await new Promise(resolve => setTimeout(resolve, 5000));
             return connectDB(retries - 1);
         }
+
+        console.error('🚫 MongoDB connection failed. Exiting...');
         process.exit(1);
     }
 };
 
-// Initialize MongoDB connection before starting the server
+// Initialize server only after MongoDB connection
 connectDB().then(() => {
-    app.listen(process.env.PORT || 5000, async () => {
+    app.listen(PORT, async () => {
         try {
-            console.log('listening on port ' + (process.env.PORT || 5000));
+            console.log(`🚀 Server is running on port ${PORT}`);
+
             const accounts = await web3.eth.getAccounts();
+            const contactList = new web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
 
-            const contactList = new web3.eth.Contract(
-                CONTACT_ABI,
-                CONTACT_ADDRESS
-            );
+            console.log(`✅ Contract address: ${CONTACT_ADDRESS}`);
 
-            // Add test endpoint
+            // Add a test endpoint for basic connectivity check
             app.get('/test', async (req, res) => {
                 try {
                     const count = await contactList.methods.count().call();
@@ -72,15 +79,16 @@ connectDB().then(() => {
                     res.status(500).json({ 
                         success: false, 
                         error: error.message,
-                        contractAddress: CONTACT_ADDRESS
+                        contractAddress: CONTACT_ADDRESS 
                     });
                 }
             });
 
-            routes(app, null, accounts, contactList);
-            console.log('Contract address:', CONTACT_ADDRESS);
+            // Pass Mongoose connection to routes
+            routes(app, mongoose.connection.db, accounts, contactList);
+
         } catch (err) {
-            console.error('Server initialization error:', err);
+            console.error('❌ Server initialization error:', err);
         }
     });
 });

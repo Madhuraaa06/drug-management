@@ -1,3 +1,4 @@
+const path = require('path');
 function routes(app, db, accounts, contactList) {
     // 1. Configure multer once at the top
     const multer = require('multer');
@@ -12,8 +13,7 @@ function routes(app, db, accounts, contactList) {
                     return cb(new Error('Please upload a CSV file'));
                 }
             }
-            cb(null, `${Date.now()}-${file.originalname}`);
-        }
+            cb(null, file.fieldname + "-" + Date.now() + path.extname(file.originalname));}
     });
 
     const upload = multer({ 
@@ -106,7 +106,7 @@ function routes(app, db, accounts, contactList) {
             if (!req.file) {
                 throw new Error('Please upload a CSV file');
             }
-
+    
             const { 
                 manufacturerName, 
                 drugName, 
@@ -114,19 +114,26 @@ function routes(app, db, accounts, contactList) {
                 drugDescription,
                 commonSideEffect
             } = req.body;
-
+    
+            // Check if any required field is missing
+            if (!manufacturerName || !drugName || !storageTemperature || !drugDescription || !commonSideEffect) {
+                throw new Error('All fields must be provided');
+            }
+    
             // Create drug record in blockchain
             const result = await contactList.methods.createContact(
-                manufacturerName,
-                drugName,
-                drugDescription,
-                commonSideEffect
+                manufacturerName,    //
+                drugName,            // 
+                storageTemperature,  // 
+                drugDescription      // 
             ).send({
                 from: accounts[0],
                 gas: 3000000
             });
-
-            // Store in MongoDB
+            
+            console.log("Transaction Hash:", result.transactionHash);  // For debugging
+    
+            // Store in MongoDB with transaction hash
             const clinicalData = {
                 manufacturerName,
                 drugName,
@@ -134,25 +141,32 @@ function routes(app, db, accounts, contactList) {
                 drugDescription,
                 commonSideEffect,
                 csvFilePath: req.file.path,
+                transactionHash: result.transactionHash,   // Include the hash here
                 status: 'pending',
                 createdAt: new Date()
             };
+            console.log("Creating record on blockchain...");
+console.log("Calling createContact with:", manufacturerName, drugName, drugDescription, commonSideEffect);
+console.log("Using Ethereum account:", accounts[0]);
 
+    
             await db.collection('clinicalTrials').insertOne(clinicalData);
-
+    
             res.json({
                 status: "ok",
                 message: "Clinical trial data uploaded successfully",
                 transactionHash: result.transactionHash
             });
         } catch (error) {
-            console.error('Upload error:', error);
+            console.error('Upload error:', error); // Log the error
             res.status(500).json({ 
                 status: "error", 
                 message: error.message 
             });
         }
     });
+    
+    
 
     // 3. Public Drug Search Route
     app.get("/drugs", async (req, res) => {
@@ -215,7 +229,7 @@ function routes(app, db, accounts, contactList) {
                         targetCondition: contact.Targetedmedicalcondition
                     });
                 } catch (error) {
-                    console.error(`Error fetching contact ${i}:`, error);
+                    console.error(error)
                 }
             }
 
@@ -288,9 +302,7 @@ function routes(app, db, accounts, contactList) {
     // Get Applications
     app.get("/getApplication", async (req, res) => {
         try {
-            // Fetch all applications from MongoDB
-            const applications = await db.find({}).toArray();
-            
+            const applications = await db.collection("clinicalTrials").find({}).toArray();  
             res.json({
                 status: "ok",
                 data: applications
@@ -299,14 +311,23 @@ function routes(app, db, accounts, contactList) {
             res.status(500).json({ status: "error", message: error.message });
         }
     });
+    
 
     // Get Drug Details
     app.get("/getDrugDetails/:drugName", async (req, res) => {
         try {
             const { drugName } = req.params;
+    
+            // Get the 'clinicalTrials' collection from the database
+            const collection = db.collection("clinicalTrials");
+    
             // Fetch drug details from MongoDB
-            const drugDetails = await db.findOne({ drugName });
-            
+            const drugDetails = await collection.findOne({ drugName: drugName });
+    
+            if (!drugDetails) {
+                return res.status(404).json({ status: "error", message: "Drug not found" });
+            }
+    
             res.json({
                 status: "ok",
                 data: drugDetails
@@ -315,6 +336,7 @@ function routes(app, db, accounts, contactList) {
             res.status(500).json({ status: "error", message: error.message });
         }
     });
+    
 
     // Get Application Status
     app.get("/applicationstatus", async (req, res) => {

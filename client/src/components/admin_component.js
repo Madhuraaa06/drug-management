@@ -1,4 +1,4 @@
-import React, { Component, useState } from "react";
+import React, { useState } from "react";
 
 export default function Admin() {
   const [email, setEmail] = useState("");
@@ -7,31 +7,14 @@ export default function Admin() {
   function handleSubmit(e) {
     e.preventDefault();
 
-    console.log(email, password);
-    fetch("http://localhost:5000/admin-login", {
-      method: "POST",
-      crossDomain: true,
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data, "userRegister");
-        if (data.status == "ok") {
-          alert("login successful");
-          window.localStorage.setItem("token", data.data);
-          window.localStorage.setItem("loggedIn", true);
-
-          window.location.href = "./userDetails";
-        }
-      });
+    if (email === "admin" && password === "admin") {
+      alert("Login successful");
+      localStorage.setItem("token", "admin-token"); // Simulating authentication token
+      localStorage.setItem("loggedIn", true);
+      window.location.href = "./adwelcome"; // Redirect after login
+    } else {
+      alert("Invalid Credentials");
+    }
   }
 
   return (
@@ -43,9 +26,10 @@ export default function Admin() {
           <div className="mb-3">
             <label>Email address</label>
             <input
-              type="email"
+              type="text"
               className="form-control"
-              placeholder="Enter email"
+              placeholder="Enter admin email"
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
@@ -55,13 +39,15 @@ export default function Admin() {
             <input
               type="password"
               className="form-control"
-              placeholder="Enter password"
+              placeholder="Enter admin password"
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
+
           <div className="d-grid">
             <button type="submit" className="btn btn-primary">
-              Submit
+              Login
             </button>
           </div>
         </form>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 
 export default function UserHome({ userData }) {
@@ -12,6 +12,7 @@ export default function UserHome({ userData }) {
   };
 
   const [formData, setFormData] = useState(initialState);
+  const [loading, setLoading] = useState(false);
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -22,26 +23,26 @@ export default function UserHome({ userData }) {
   };
 
   const handleSubmit = async () => {
-    // Create a FormData object to send the text inputs and the file
-    const { file, ...data } = formData;
+    if (!formData.file || !formData.manufacturerName || !formData.drugName) {
+      alert("Please fill in all fields and upload a file.");
+      return;
+    }
+
     const formDataObj = new FormData();
-    formDataObj.append("file", file);
-    for (const key in data) {
-      formDataObj.append(key, data[key]);
+    for (const key in formData) {
+      formDataObj.append(key, formData[key]);
     }
 
     try {
-      // Make an API request to upload the CSV file and submit the data
-      await axios.post("http://localhost:5000/upload-clinicaltraildata", formDataObj);
-
-      // File and data submitted successfully
-      alert("Form successfully submitted");
-      console.log("CSV file and data submitted successfully");
-
-      setFormData(initialState); // Reset form data to initial values
+      setLoading(true);
+      const response = await axios.post("http://localhost:5000/upload-clinicaltraildata", formDataObj);
+      alert(response.data.message);
+      setFormData(initialState); // Reset form
     } catch (error) {
-      // Handle error
-      console.error("Error uploading CSV file and submitting data:", error);
+      console.error("Error uploading data:", error);
+      alert("Failed to submit. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,95 +54,72 @@ export default function UserHome({ userData }) {
   return (
     <div className="auth-wrapper">
       <div className="user-home">
-        <div className="mb-3">
-          <div class="row">
-            <div class="col">
-              <label>Manufacturer name</label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Enter Manufacturer Name"
-                value={formData.manufacturerName}
-                onChange={(e) =>
-                  setFormData((prevData) => ({
-                    ...prevData,
-                    manufacturerName: e.target.value,
-                  }))
-                }
-              />
-            </div>
-            <div class="col">
-              <label>Drug name</label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Enter Drug Name"
-                value={formData.drugName}
-                onChange={(e) =>
-                  setFormData((prevData) => ({
-                    ...prevData,
-                    drugName: e.target.value,
-                  }))
-                }
-              />
-            </div>
-            <div class="col">
-              <label>Storage Temperature</label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Enter Appropriate Storage Temperature"
-                value={formData.storageTemperature}
-                onChange={(e) =>
-                  setFormData((prevData) => ({
-                    ...prevData,
-                    storageTemperature: e.target.value,
-                  }))
-                }
-              />
-            </div>
+        <h2>Submit Clinical Trial Data</h2>
+        <div className="row mb-3">
+          <div className="col">
+            <label>Manufacturer Name</label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Enter Manufacturer Name"
+              value={formData.manufacturerName}
+              onChange={(e) => setFormData({ ...formData, manufacturerName: e.target.value })}
+            />
+          </div>
+          <div className="col">
+            <label>Drug Name</label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Enter Drug Name"
+              value={formData.drugName}
+              onChange={(e) => setFormData({ ...formData, drugName: e.target.value })}
+            />
+          </div>
+          <div className="col">
+            <label>Storage Temperature</label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Enter Storage Temperature"
+              value={formData.storageTemperature}
+              onChange={(e) => setFormData({ ...formData, storageTemperature: e.target.value })}
+            />
           </div>
         </div>
 
         <div className="mb-3">
           <label>Drug Description</label>
-          <input
-            type="text"
+          <textarea
             className="form-control"
-            placeholder="Describe what it cures"
+            placeholder="Describe the drug"
             value={formData.drugDescription}
-            onChange={(e) =>
-              setFormData((prevData) => ({
-                ...prevData,
-                drugDescription: e.target.value,
-              }))
-            }
+            onChange={(e) => setFormData({ ...formData, drugDescription: e.target.value })}
           />
         </div>
+
         <div className="mb-3">
-          <label>Common side effect</label>
+          <label>Common Side Effect</label>
           <input
             type="text"
             className="form-control"
             placeholder="Enter Common Side Effect"
             value={formData.commonSideEffect}
-            onChange={(e) =>
-              setFormData((prevData) => ({
-                ...prevData,
-                commonSideEffect: e.target.value,
-              }))
-            }
+            onChange={(e) => setFormData({ ...formData, commonSideEffect: e.target.value })}
           />
         </div>
-        <div class="mb-3">
-          <h6>Upload clinical trail data</h6>
-          <input type={"file"} accept={".csv"} onChange={handleFileChange} />
+
+        <div className="mb-3">
+          <label>Upload Clinical Trial Data (CSV)</label>
+          <input type="file" accept=".csv" onChange={handleFileChange} />
         </div>
-        <button onClick={logOut} className="btn btn-primary me-1">
+
+        <button onClick={logOut} className="btn btn-danger me-2">
           Log Out
         </button>
-        <button onClick={handleSubmit} className="btn btn-primary">
-          Submit
+
+        <button onClick={handleSubmit} className="btn btn-primary" disabled={loading}>
+          {loading ? "Submitting..." : "Submit"}
         </button>
       </div>
     </div>
