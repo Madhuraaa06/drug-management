@@ -99,7 +99,7 @@ export default function UserHome({ userData }) {
         </div>
 
         <div className="mb-3">
-          <label>Common Side Effect</label>
+          <label>Targeted Medical Condition</label>
           <input
             type="text"
             className="form-control"

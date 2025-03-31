@@ -81,7 +81,12 @@ export default function AdminApplicationView({ userData }) {
                 <tr>
                   <td style={styles.detailLabel}>Clinical Trial Data:</td>
                   <td>
-                    <Link to={`/adhome/${encodeURIComponent(drugDetails.drugName)}`}>
+                    <Link 
+                      to={{
+                        pathname: `/adhome/${encodeURIComponent(drugDetails.drugName)}`,
+                        state: { drugDetails } // Pass the drugDetails state
+                      }}
+                    >
                       <FontAwesomeIcon icon={faPaperPlane} style={styles.icon} />
                     </Link>
                   </td>
@@ -96,6 +101,7 @@ export default function AdminApplicationView({ userData }) {
     </div>
   );
 }
+
 
 const styles = {
   authWrapper: {

@@ -124,8 +124,8 @@ function routes(app, db, accounts, contactList) {
             const result = await contactList.methods.createContact(
                 manufacturerName,    //
                 drugName,            // 
-                storageTemperature,  // 
-                drugDescription      // 
+                drugDescription,  // 
+                commonSideEffect      // 
             ).send({
                 from: accounts[0],
                 gas: 3000000
@@ -272,33 +272,49 @@ console.log("Using Ethereum account:", accounts[0]);
                 updatereason, 
                 rejectreason 
             } = req.body;
-
+    
             // Update in MongoDB
             const result = await db.collection('clinicalTrials').updateOne(
                 { manufacturerName, drugName },
                 { 
                     $set: { 
-                        status: updatereject ? 'update_required' : 'rejected',
-                        updateReason: updatereason,
-                        rejectReason: rejectreason,
+                        status: updatereject ? 'approved' : 'rejected', // Change status to approved or rejected
+                        updateReason: updatereject ? updatereason : null, // Set updateReason only if approved
+                        rejectReason: !updatereject ? rejectreason : null, // Set rejectReason only if rejected
                         updatedAt: new Date()
                     }
                 }
             );
-
+    
             if (result.modifiedCount === 0) {
                 throw new Error('Application not found');
             }
-
+    
             res.json({
                 status: "ok",
-                message: updatereject ? "Update requested" : "Application rejected"
+                message: updatereject ? "Update approved" : "Application rejected"
             });
         } catch (error) {
             res.status(500).json({ status: "error", message: error.message });
         }
     });
-
+    
+    app.get('/getClinicalTrialData/:drugName', async (req, res) => {
+        try {
+          const { drugName } = req.params; // Get drugName from route parameters
+      
+          // Fetch clinical trial data from MongoDB
+          const clinicalTrialData = await db.collection('clinicalTrials').findOne({ drugName: drugName });
+      
+          if (clinicalTrialData) {
+            res.json({ status: "ok", data: clinicalTrialData });
+          } else {
+            res.json({ status: "not found", message: "No clinical trial data found for the specified drug." });
+          }
+        } catch (error) {
+          res.status(500).json({ status: "error", message: error.message });
+        }
+      });
     // Get Applications
     app.get("/getApplication", async (req, res) => {
         try {
@@ -342,14 +358,22 @@ console.log("Using Ethereum account:", accounts[0]);
     app.get("/applicationstatus", async (req, res) => {
         try {
             const { drugName } = req.query;
+    
             // Fetch application status from MongoDB
-            const status = await db.findOne({ drugName });
-            
-            res.json(status || []);
+            const status = await db.collection('clinicalTrials').findOne({ drugName });
+    
+            if (status) {
+                // Return the found document along with a success status
+                res.json({ status: "success", data: status });
+            } else {
+                // If no document is found, return a not found status
+                res.json({ status: "not found", data: [] });
+            }
         } catch (error) {
             res.status(500).json({ status: "error", message: error.message });
         }
     });
+    
 
     app.get("/application-status/:manufacturerName", async (req, res) => {
         try {

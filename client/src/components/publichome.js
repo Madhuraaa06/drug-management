@@ -9,6 +9,8 @@ export default function Publichome() {
 
   const handleSearch = async () => {
     try {
+      console.log("🔍 Starting drug search...");
+
       const provider = window.ethereum;
       if (!provider) {
         console.log("❌ Non-Ethereum browser detected. Please install MetaMask.");
@@ -17,38 +19,73 @@ export default function Publichome() {
 
       await provider.request({ method: "eth_requestAccounts" });
       const web3 = new Web3(provider);
-      const contract = new web3.eth.Contract(CONTACT_ABI, CONTACT_ADDRESS);
+      console.log("✅ Web3 initialized.");
 
-      const COUNTER = await contract.methods.count().call();
-      console.log("📊 Total drugs in contract:", COUNTER);
+      // Get the latest block number
+      const latestBlockNumber = await web3.eth.getBlockNumber();
+      console.log(`📌 Latest Block Number: ${latestBlockNumber}`);
+
+      if (latestBlockNumber < 19) {
+        console.log("⚠️ No transactions available from block 19 onward.");
+        return;
+      }
+
+      const allTransactionHashes = [];
+
+      // Fetch transactions from block 19 onwards
+      for (let i = latestBlockNumber; i >= 19; i--) {
+        const block = await web3.eth.getBlock(i, true); // true to include transactions
+        if (block && block.transactions) {
+          block.transactions.forEach((tx) => {
+            allTransactionHashes.push(tx.hash);
+          });
+        }
+      }
+
+      if (!allTransactionHashes.length) {
+        console.log("⚠️ No transactions found.");
+        return;
+      }
 
       const results = [];
 
-      for (let i = 1; i <= COUNTER; i++) {
+      for (let hash of allTransactionHashes) {
+        console.log(`🔎 Fetching transaction details for hash: ${hash}...`);
+
+        const tx = await web3.eth.getTransaction(hash);
+        if (!tx || !tx.input) {
+          console.log(`⚠️ Transaction ${hash} has no input data.`);
+          continue;
+        }
+
         try {
-          const contact = await contract.methods.contacts(i).call();
-          
-          if (contact.Drugname?.toLowerCase().trim() === drugName.toLowerCase().trim()) {
+          const decodedData = web3.eth.abi.decodeParameters(
+            ["string", "string", "string", "string"], // Adjust types as needed
+            tx.input.slice(10) // Remove function selector
+          );
+
+          console.log("🔓 Decoded Transaction Data:", decodedData);
+
+          const extractedDrugName = decodedData[1]; // Element 1 is the drug name
+          console.log(`📝 Extracted Drug Name: ${extractedDrugName}`);
+
+          if (extractedDrugName.toLowerCase().trim() === drugName.toLowerCase().trim()) {
             console.log(`✅ Match found for drug: ${drugName}`);
 
-            let blockDetails = { blockHash: "N/A", blockNumber: "N/A" };
+            const block = await web3.eth.getBlock(tx.blockNumber);
+            console.log("📦 Block Details:", block);
 
-            try {
-              const latestBlock = await web3.eth.getBlock("latest");
-              const transactionReceipt = await web3.eth.getTransactionReceipt(latestBlock.transactions[0]);
-
-              if (transactionReceipt) {
-                const block = await web3.eth.getBlock(transactionReceipt.blockNumber);
-                blockDetails = { blockHash: block.hash, blockNumber: block.number };
-              }
-            } catch (blockError) {
-              console.warn("⚠️ Could not fetch block details:", blockError);
-            }
-
-            results.push({ ...contact, ...blockDetails });
+            results.push({
+              Drugname: extractedDrugName,
+              Composition: decodedData[2] || "N/A",
+              Targetedmedicalcondition: decodedData[3] || "N/A",
+              blockHash: block.hash,
+              blockNumber: block.number,
+              transactionHash: hash,
+            });
           }
-        } catch (error) {
-          console.error(`⚠️ Error retrieving record ${i}:`, error);
+        } catch (decodeError) {
+          console.error(`⚠️ Error decoding transaction ${hash}:`, decodeError);
         }
       }
 
@@ -85,7 +122,6 @@ export default function Publichome() {
               <table className="table table-bordered text-center custom-table">
                 <thead>
                   <tr>
-                    {/* <th>Manufacturer Name</th> */}
                     <th>Drug Name</th>
                     <th>Composition</th>
                     <th>Targeted Medical Condition</th>
@@ -95,7 +131,6 @@ export default function Publichome() {
                 <tbody>
                   {searchResults.map((result, index) => (
                     <tr key={index}>
-                      {/* //<td className="text-wrap">{result.Manufacturename || "N/A"}</td> */}
                       <td>{result.Drugname || "N/A"}</td>
                       <td className="text-wrap">{result.Composition || "N/A"}</td>
                       <td className="text-wrap">{result.Targetedmedicalcondition || "N/A"}</td>
