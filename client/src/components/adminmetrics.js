@@ -81,7 +81,7 @@ export default function AdminMetrics() {
 
             {/* Dashboard Content */}
             <div className="container-fluid fixed-content">
-              <div className="bg-primary text-white text-center py-3 mb-4">
+              <div className="bg-primary text-white text-center py-3 mt-4 mb-4">
                 <h2 className="mb-0">Dashboard Metrics</h2>
               </div>
 

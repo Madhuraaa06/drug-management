@@ -17,7 +17,7 @@ export default function AdminHome() {
 
             {/* Dashboard Content */}
             <div className="container-fluid fixed-content">
-              <div className="bg-primary text-white text-center py-3 mb-4">
+              <div className="bg-primary text-white text-center py-3 mt-4 mb-4">
                 <h2 className="mb-0">Admin Home</h2>
               </div>
 
@@ -27,14 +27,6 @@ export default function AdminHome() {
                     <div className="card-body text-center">
                       <h3 className="mb-4 text-primary">Welcome to the FDA Admin Portal</h3>
                       <p className="lead">Use the sidebar navigation to manage drug applications and certifications.</p>
-                      <div className="mt-4">
-                        <a href="/admetrics" className="btn btn-primary me-3">
-                          <i className="bi bi-graph-up me-2"></i>View Dashboard Metrics
-                        </a>
-                        <a href="/adview" className="btn btn-success">
-                          <i className="bi bi-list-check me-2"></i>View Applications
-                        </a>
-                      </div>
                     </div>
                   </div>
                 </div>

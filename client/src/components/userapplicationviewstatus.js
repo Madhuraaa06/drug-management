@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { toast } from 'react-toastify';
+import UserSidebar from "./usersidebar";
 import "../App.css";
 
 export default function UserApplicationViewStatus({ userData }) {
@@ -53,7 +55,7 @@ export default function UserApplicationViewStatus({ userData }) {
   const handleSearch = async () => {
     try {
       if (!drugName.trim()) {
-        alert("Please enter a drug name to search");
+        toast.warning("Please enter a drug name to search");
         return;
       }
 
@@ -63,94 +65,108 @@ export default function UserApplicationViewStatus({ userData }) {
 
       if (response.data.status === "success") {
         setSearchResults([response.data.data]);
+        toast.success("Data retrieved successfully");
         setStatusMessage("Data retrieved successfully.");
       } else {
         setSearchResults([]);
+        toast.info("No results found for the specified drug name");
         setStatusMessage("No results found for the specified drug name.");
       }
 
       setDrugName(""); // Clear the search bar after performing the search
     } catch (error) {
       console.error("Error retrieving data:", error);
+      toast.error("Error retrieving data");
       setStatusMessage("Error retrieving data.");
     }
   };
 
-  const logOut = () => {
-    window.localStorage.clear();
-    window.location.href = "./sign-in";
-  };
-
   return (
-    <div style={{ paddingTop: '100px' }} className="auth-wrapper">
-      <div className="admin-home">
-        <div style={{ paddingTop: '10px' }} className="table-container">
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px' }}>
-            <input
-              type="text"
-              value={drugName}
-              onChange={(e) => setDrugName(e.target.value)}
-              className="form-control"
-              placeholder="Enter drug name"
-            />
-            <button className="btn btn-primary" onClick={handleSearch} style={{ marginLeft: '10px', minWidth: '150px' }}>
-              Search Your Drug By Name
-            </button>
+    <div className="admin-dashboard">
+      <div className="container-fluid p-0">
+        <div className="row g-0">
+          <div className="col-2 bg-white sidebar">
+            <UserSidebar/>
           </div>
+          <div className="col-10 main-content p-0">
+            <div className="container-fluid fixed-content">
+              <div className="bg-primary text-white text-center py-3 mt-4 mb-4">
+                <h2 className="mb-0">My Applications</h2>
+              </div>
 
-          {statusMessage && <p>{statusMessage}</p>} {/* Display status message */}
+              <div className="card shadow-sm mb-4">
+                <div className="card-body">
+                  <div className="row mb-4">
+                    <div className="col-md-8 mx-auto">
+                      <div className="input-group">
+                        <input
+                          type="text"
+                          value={drugName}
+                          onChange={(e) => setDrugName(e.target.value)}
+                          className="form-control"
+                          placeholder="Enter drug name to search"
+                        />
+                        <button
+                          className="btn btn-primary"
+                          onClick={handleSearch}
+                        >
+                          <i className="bi bi-search me-2"></i>Search
+                        </button>
+                      </div>
+                    </div>
+                  </div>
 
-          <h3>Your Drug Applications</h3>
-
-          {searchResults.length > 0 ? (
-            <div>
-              <table className="table table-striped">
-                <thead>
-                  <tr>
-                    <th>Manufacturer Name</th>
-                    <th>Drug Name</th>
-                    <th>Storage Temperature</th>
-                    <th>Drug Description</th>
-                    <th>Common Side Effects</th>
-                    <th>Transaction Hash</th>
-                    <th>Status</th>
-                    <th>Created At</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {searchResults.map((result, index) => (
-                    <tr key={index}>
-                      <td>{result.manufacturerName}</td>
-                      <td>{result.drugName}</td>
-                      <td>{result.storageTemperature}</td>
-                      <td>{result.drugDescription}</td>
-                      <td>{result.commonSideEffect}</td>
-                      <td>
-                        {result.transactionHash ? (
-                          <span className="text-success">{result.transactionHash.substring(0, 10)}...</span>
-                        ) : (
-                          <span className="text-muted">Not available</span>
-                        )}
-                      </td>
-                      <td>
-                        <span className={`badge ${result.status === 'approved' ? 'bg-success' : result.status === 'rejected' ? 'bg-danger' : 'bg-warning'}`}>
-                          {result.status || 'pending'}
-                        </span>
-                      </td>
-                      <td>{new Date(result.createdAt).toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                  {searchResults.length > 0 ? (
+                    <div className="table-responsive">
+                      <table className="table table-striped table-hover">
+                        <thead className="table-primary">
+                          <tr>
+                            <th>Manufacturer</th>
+                            <th>Drug Name</th>
+                            <th>Storage Temp</th>
+                            <th>Description</th>
+                            <th>Side Effects</th>
+                            <th>Transaction Hash</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {searchResults.map((result, index) => (
+                            <tr key={index}>
+                              <td>{result.manufacturerName}</td>
+                              <td>{result.drugName}</td>
+                              <td>{result.storageTemperature}</td>
+                              <td>{result.drugDescription?.substring(0, 30)}...</td>
+                              <td>{result.commonSideEffect?.substring(0, 30)}...</td>
+                              <td>
+                                {result.transactionHash ? (
+                                  <span className="text-success">{result.transactionHash.substring(0, 10)}...</span>
+                                ) : (
+                                  <span className="text-muted">Not available</span>
+                                )}
+                              </td>
+                              <td>
+                                <span className={`badge ${result.status === 'approved' ? 'bg-success' : result.status === 'rejected' ? 'bg-danger' : 'bg-warning'}`}>
+                                  {result.status || 'pending'}
+                                </span>
+                              </td>
+                              <td>{new Date(result.createdAt).toLocaleString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="alert alert-info text-center">
+                      <i className="bi bi-info-circle me-2"></i>
+                      {statusMessage || "No applications found. Please submit a clinical trial application first."}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          ) : (
-            <div className="alert alert-info">
-              {statusMessage || "No applications found. Please submit a clinical trial application first."}
-            </div>
-          )}
-          <button onClick={logOut} className="btn btn-primary me-1">
-            Log Out
-          </button>
+          </div>
         </div>
       </div>
     </div>

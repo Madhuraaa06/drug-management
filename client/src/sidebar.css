@@ -1,7 +1,17 @@
-.list-group a:hover{
-    background-color: #007bff;
-    color: #ffffff;
-  }
+/* Hover effect for links inside list-group */
+.list-group a:hover {
+  color: #007bff;
+}
+
+/* When hovering over the list-group-item, change the link color to white if background is blue */
+.list-group-item:hover a {
+  color: #007bff;
+}
+
+/* When hovering over the list-group-item, change the link color to blue */
+.list-group-item:hover a:hover {
+  color: #007bff;
+}
 
 .sidebar {
   border-right: 1px solid #e9ecef;
@@ -11,12 +21,50 @@
 .list-group-item {
   background-color: transparent;
   padding-left: 20px;
+  transition: all 0.3s ease;
+  border-radius: 0;
+  margin-bottom: 0;
+  border-left: 3px solid transparent;
 }
 
 .list-group-item:hover {
-  background-color: rgba(0, 123, 255, 0.1);
+  background-color: #e6f2ff;
+  border-left: 3px solid #007bff;
+}
+
+/* Active menu item - subtle indication with just the left border */
+.list-group-item.active-menu-item {
+  background-color: transparent;
+  border-left: 3px solid #007bff;
+}
+
+.list-group-item.active-menu-item a,
+.list-group-item.active-menu-item a:hover,
+.list-group-item.active-menu-item i {
+  color: #007bff;
+}
+
+/* Ensure active menu items have the same hover effect */
+.list-group-item.active-menu-item:hover {
+  background-color: #e6f2ff;
 }
 
 .sidebar .bg-primary {
   background-color: #007bff !important;
+}
+
+.sidebar .text-white {
+  background-color: #007bff;
+  width: 100%;
+  display: block;
+}
+
+.sidebar {
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 16.666667%;
+  z-index: 1000;
+  overflow-y: auto;
 }

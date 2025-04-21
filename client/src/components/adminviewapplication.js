@@ -58,7 +58,7 @@ export default function AdminApplicationView({ userData }) {
           </div>
           <div className="col-10 main-content p-0">
             <div className="container-fluid fixed-content">
-              <div className="bg-primary text-white text-center py-3 mb-4">
+              <div className="bg-primary text-white text-center py-3 mt-4 mb-4">
                 <h2 className="mb-0">Applications</h2>
               </div>
 

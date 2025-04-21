@@ -1,39 +1,58 @@
-import React, { Component, useEffect, useState } from "react";
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import { toast } from 'react-toastify';
 import "../sidebar.css";
-import { Link } from "react-router-dom";
-
-
 
 function UserSidebar() {
+    const location = useLocation();
+
+    const handleLogout = () => {
+        toast.info("Logging out...");
+        setTimeout(() => {
+            window.localStorage.clear();
+            window.location.href = "/sign-in";
+        }, 1000);
+    };
+
     return (
-        <div style={{ paddingTop: '64px' }} className='bg-white sidebar p-2'>
-            <div style={{ paddingTop: '64px' }} className='m-2'>
-                <i></i>
-                <span className='brand-name fs-3'></span>
+        <div className='sidebar p-0'>
+            <div className='text-white text-center py-3' style={{ marginTop: '64px' }}>
+                <h5 className='mb-0'>MANUFACTURER PORTAL</h5>
             </div>
-            <div style={{ paddingTop: '64px' }} className='m-2'>
-                <i className='bi bi-bootstrap-fill me-3 fs-4'></i>
-                <span className='brand-name fs-3'>User</span>
-            </div>
-            <hr className='text-dark' />
             <div className='list-group list-group-flush'>
-                <Link to="/userDetails" className='list-group-item py-2'>
-                    <i className='bi bi-speedometer2 fs-5 me-3'></i>
-                    <span>Dashboard</span>
-                </Link>
-                <Link to="/userHome" className='list-group-item py-2'>
-                    <i className='bi bi-house fs-5 me-3'></i>
-                    <span>Apply for Certification</span>
-                </Link>
-                <Link to="/userapplicationstatus" className='list-group-item py-2'>
-                    <i className='bi bi-table fs-5 me-3'></i>
-                    <span>View Application Status</span>
-                </Link>
-                <Link to="/sign-in" className='list-group-item py-2'>
-                    <i className='bi bi-power fs-5 me-3'></i>
-                    <span>Logout</span>
-                </Link>
+                <div className={`list-group-item py-3 border-0 ${location.pathname === '/userDetails' ? 'active-menu-item' : ''}`}>
+                    <Link to="/userDetails" className="text-decoration-none text-dark d-flex align-items-center w-100">
+                        <i className='bi bi-house-door fs-5 me-3'></i>
+                        <span>Home</span>
+                    </Link>
+                </div>
+
+                <div className={`list-group-item py-3 border-0 ${location.pathname === '/userHome' ? 'active-menu-item' : ''}`}>
+                    <Link to="/userHome" className="text-decoration-none text-dark d-flex align-items-center w-100">
+                        <i className='bi bi-file-earmark-plus fs-5 me-3'></i>
+                        <span>Apply for Certification</span>
+                    </Link>
+                </div>
+
+                <div className={`list-group-item py-3 border-0 ${location.pathname === '/userapplicationviewstatus' ? 'active-menu-item' : ''}`}>
+                    <Link to="/userapplicationviewstatus" className="text-decoration-none text-dark d-flex align-items-center w-100">
+                        <i className='bi bi-table fs-5 me-3'></i>
+                        <span>View Applications</span>
+                    </Link>
+                </div>
+
+                <div className='list-group-item py-3 border-0'>
+                    <Link to="#" onClick={(e) => {
+                        e.preventDefault();
+                        handleLogout();
+                    }} className="text-decoration-none text-dark d-flex align-items-center w-100">
+                        <i className='bi bi-power fs-5 me-3'></i>
+                        <span>Logout</span>
+                    </Link>
+                </div>
             </div>
-        </div>)
+        </div>
+    );
 }
-export default UserSidebar
+
+export default UserSidebar;
