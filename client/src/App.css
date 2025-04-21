@@ -367,6 +367,126 @@ html, body {
   margin-top: auto;
 }
 
+/* Application table styling */
+.application-table {
+  border: 1px solid #e0e0e0;
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.application-table th {
+  background-color: #f8f9fa;
+  border: none;
+  border-bottom: 1px solid #e0e0e0;
+  font-weight: 600;
+  padding: 15px;
+  color: #495057;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+.application-table td {
+  border: none;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 15px;
+  vertical-align: middle;
+}
+
+.application-table tr:last-child td {
+  border-bottom: none;
+}
+
+.application-table .bg-light-gray {
+  background-color: #f9f9f9;
+}
+
+.application-table .badge {
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  border-radius: 30px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* Column widths */
+.application-table th:nth-child(1),
+.application-table td:nth-child(1) {
+  width: 18%;
+}
+
+.application-table th:nth-child(2),
+.application-table td:nth-child(2) {
+  width: 18%;
+}
+
+.application-table th:nth-child(3),
+.application-table td:nth-child(3) {
+  width: 15%;
+}
+
+.application-table th:nth-child(4),
+.application-table td:nth-child(4) {
+  width: 15%;
+}
+
+.application-table th:nth-child(5),
+.application-table td:nth-child(5) {
+  width: 34%;
+}
+
+.action-buttons-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.action-btn {
+  width: 100px;
+  height: 40px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 15px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  border: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.action-btn i {
+  font-size: 1.1rem;
+  margin-right: 8px;
+}
+
+.action-btn span {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.action-btn.btn-info {
+  background-color: #00bcd4;
+  color: white;
+}
+
+.action-btn.btn-primary {
+  background-color: #2196f3;
+  color: white;
+}
+
 /* Fix for gap between sidebar and content */
 .admin-dashboard .row.g-0 {
   margin-left: 0;
