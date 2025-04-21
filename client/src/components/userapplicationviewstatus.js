@@ -9,7 +9,7 @@ export default function UserApplicationViewStatus({ userData }) {
 
   const handleSearch = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/applicationstatus", {
+      const response = await axios.get("http://localhost:5008/applicationstatus", {
         params: { drugName }
       });
 

@@ -18,7 +18,7 @@ export default function AdminUpdate({ userData }) {
     };
 
     try {
-      await axios.post("http://localhost:5000/update-reject-certificate", requestData);
+      await axios.post("http://localhost:5008/update-reject-certificate", requestData);
       alert("Data submitted successfully");
       console.log("Data submitted successfully");
       setManufacturerName(""); // Reset manufacturerName state

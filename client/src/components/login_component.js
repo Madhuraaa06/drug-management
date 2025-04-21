@@ -9,7 +9,7 @@ export default function Login() {
     e.preventDefault();
 
     console.log(cname, email, password);
-    fetch("http://localhost:5000/login-user", {
+    fetch("http://localhost:5008/login-user", {
       method: "POST",
       crossDomain: true,
       headers: {

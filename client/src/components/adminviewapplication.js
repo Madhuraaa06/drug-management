@@ -8,7 +8,7 @@ export default function AdminApplicationView({ userData }) {
   const [drugDetails, setDrugDetails] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:5000/getApplication", { method: "GET" })
+    fetch("http://localhost:5008/getApplication", { method: "GET" })
       .then((res) => res.json())
       .then((data) => {
         console.log(data, "userData");
@@ -18,7 +18,7 @@ export default function AdminApplicationView({ userData }) {
 
   const getDrugDetails = async (drugName) => {
     try {
-      const response = await fetch(`http://localhost:5000/getDrugDetails/${drugName}`);
+      const response = await fetch(`http://localhost:5008/getDrugDetails/${drugName}`);
       const data = await response.json();
 
       if (data.status === "ok") {

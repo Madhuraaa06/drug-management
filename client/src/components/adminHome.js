@@ -15,7 +15,7 @@ export default function AdminHome({ userData }) {
   const [ethBalance, setEthBalance] = useState(null);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/getClinicalTrialData/${encodeURIComponent(drugName)}`)
+    fetch(`http://localhost:5008/getClinicalTrialData/${encodeURIComponent(drugName)}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.status === "ok") {

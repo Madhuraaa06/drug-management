@@ -8,7 +8,7 @@ const artifacts = require('./build/contracts/Contacts.json');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5008;
 
 // Middleware
 app.use(cors());
@@ -38,7 +38,7 @@ const CONTACT_ABI = artifacts.abi;
 const connectDB = async (retries = 5) => {
     try {
         await mongoose.connect(process.env.MONGODB_URI, {
-            serverSelectionTimeoutMS: 5000,
+            serverSelectionTimeoutMS: 5008,
             connectTimeoutMS: 10000,
             socketTimeoutMS: 45000,
         });
@@ -50,7 +50,7 @@ const connectDB = async (retries = 5) => {
 
         if (retries > 0) {
             console.log(`🔁 Retrying connection... (${retries} attempts left)`);
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            await new Promise(resolve => setTimeout(resolve, 5008));
             return connectDB(retries - 1);
         }
 

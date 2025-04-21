@@ -1,0 +1,6 @@
+Trial ID,Study Phase,Patient Count,Dosage (mg),Duration (Days),Primary Outcome,Common Side Effects,Success Rate (%)
+AZT-001,Phase III,150,500,3,Bacterial Infection Clearance,"Nausea, Diarrhea",85
+AZT-002,Phase II,80,500,5,Upper Respiratory Tract Infection Cure,"Headache, Vomiting",78
+AZT-003,Phase IV,200,500,5,Pneumonia Treatment Success,"Rash, Abdominal Pain",88
+AZT-004,Phase III,300,500,3,COVID-19 Symptom Reduction,"Diarrhea, Fatigue",72
+AZT-005,Phase II,120,500,7,Skin Infection Resolution,"Nausea, Headache, Dizziness",80
