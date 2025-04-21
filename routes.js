@@ -462,6 +462,40 @@ console.log("Using Ethereum account:", accounts[0]);
         }
     });
 
+    // Get Drug Name Suggestions
+    app.get("/drug-suggestions", async (req, res) => {
+        try {
+            const { query } = req.query;
+
+            if (!query || query.trim() === '') {
+                return res.json({ status: "ok", suggestions: [] });
+            }
+
+            // Search for drug names in MongoDB that match the query (case-insensitive)
+            const suggestions = await db.collection('clinicalTrials')
+                .find({
+                    drugName: { $regex: query, $options: 'i' }
+                })
+                .project({ drugName: 1, _id: 0 })
+                .limit(10)
+                .toArray();
+
+            // Extract just the drug names
+            const drugNames = suggestions.map(item => item.drugName);
+
+            res.json({
+                status: "ok",
+                suggestions: drugNames
+            });
+        } catch (error) {
+            console.error('Error fetching drug suggestions:', error);
+            res.status(500).json({
+                status: "error",
+                message: error.message
+            });
+        }
+    });
+
 
     app.get("/application-status/:manufacturerName", async (req, res) => {
         try {
