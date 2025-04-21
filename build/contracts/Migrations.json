@@ -1048,7 +1048,7 @@
   "sourceMap": "61:364:1:-:0;;;252:51;;;;;;;;;;285:10;277:5;;:18;;;;;;;;;;;;;;;;;;61:364;;;;;;",
   "deployedSourceMap": "61:364:1:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;115:39;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;88:20;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;311:111;;;;;;;;;;;;;:::i;:::-;;:::i;:::-;;115:39;;;;:::o;88:20::-;;;;;;;;;;;;:::o;311:111::-;218:5;;;;;;;;;;204:19;;:10;:19;;;196:28;;;;;;405:9:::1;378:24;:36;;;;311:111:::0;:::o;7:77:2:-;44:7;73:5;62:16;;7:77;;;:::o;90:118::-;177:24;195:5;177:24;:::i;:::-;172:3;165:37;90:118;;:::o;214:222::-;307:4;345:2;334:9;330:18;322:26;;358:71;426:1;415:9;411:17;402:6;358:71;:::i;:::-;214:222;;;;:::o;442:126::-;479:7;519:42;512:5;508:54;497:65;;442:126;;;:::o;574:96::-;611:7;640:24;658:5;640:24;:::i;:::-;629:35;;574:96;;;:::o;676:118::-;763:24;781:5;763:24;:::i;:::-;758:3;751:37;676:118;;:::o;800:222::-;893:4;931:2;920:9;916:18;908:26;;944:71;1012:1;1001:9;997:17;988:6;944:71;:::i;:::-;800:222;;;;:::o;1109:117::-;1218:1;1215;1208:12;1355:122;1428:24;1446:5;1428:24;:::i;:::-;1421:5;1418:35;1408:63;;1467:1;1464;1457:12;1408:63;1355:122;:::o;1483:139::-;1529:5;1567:6;1554:20;1545:29;;1583:33;1610:5;1583:33;:::i;:::-;1483:139;;;;:::o;1628:329::-;1687:6;1736:2;1724:9;1715:7;1711:23;1707:32;1704:119;;;1742:79;;:::i;:::-;1704:119;1862:1;1887:53;1932:7;1923:6;1912:9;1908:22;1887:53;:::i;:::-;1877:63;;1833:117;1628:329;;;;:::o",
   "source": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.10;\r\n\r\ncontract Migrations {\r\n    address public owner;\r\n    uint256 public last_completed_migration;\r\n\r\n    modifier restricted() {\r\n        require(msg.sender == owner);\r\n        _;\r\n    }\r\n\r\n    constructor() {\r\n        owner = msg.sender;\r\n    }\r\n\r\n    function setCompleted(uint completed) public restricted {\r\n        last_completed_migration = completed;\r\n    }\r\n}",
-  "sourcePath": "C:\\Users\\Ankita\\OneDrive - Vidyalankar Institute of Technology\\Documents\\New folder\\blockchain\\blockchain_DrugProject\\contracts\\Migrations.sol",
+  "sourcePath": "/Users/bitrootwork/Desktop/Praveen Playground/drug-management/contracts/Migrations.sol",
   "ast": {
     "absolutePath": "project:/contracts/Migrations.sol",
     "exportedSymbols": {
@@ -1492,6 +1492,12 @@
     "version": "0.8.10+commit.fc410830.Emscripten.clang"
   },
   "networks": {
+    "1": {
+      "events": {},
+      "links": {},
+      "address": "0x96aaB7e8bDEB9c5705a4208fee489B6105b5D089",
+      "transactionHash": "0x4860b2099eb4c730d3957ed7eaf78fe98834919dd0814ec540b30a449e4693c2"
+    },
     "1337": {
       "events": {},
       "links": {},
@@ -1501,12 +1507,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0xC006d460A9B65B33dC429061Ba7e1F7483C95aa8",
-      "transactionHash": "0x3a9ed08f82b016f094f1ee8d121b8a877c2a0ea802961c68d0f927c0a03640e9"
+      "address": "0x07c5BfFE152C0FEfaF7761Ee4Dd2350D51fe4C59",
+      "transactionHash": "0xbd23bc6f4f0b39d4cb7e3ddc0554348c420593695d0a860bcc56a7c405f06ec3"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2025-03-28T14:38:43.334Z",
+  "updatedAt": "2025-04-21T08:56:13.921Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

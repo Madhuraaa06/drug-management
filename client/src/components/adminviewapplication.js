@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
+import "../App.css";
 
 export default function AdminApplicationView({ userData }) {
   const [data, setData] = useState([]);
@@ -42,147 +41,103 @@ export default function AdminApplicationView({ userData }) {
   };
 
   return (
-    <div style={styles.authWrapper}>
-      <div style={styles.container}>
-        <h3 style={styles.heading}>List of Applications</h3>
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.tableHeader}>Manufacturer Name</th>
-              <th style={styles.tableHeader}>Drug Name</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((item, index) => (
-              <tr key={index} style={styles.tableRow}>
-                <td style={styles.tableCellBold}>{item.manufacturerName}</td>
-                <td>
-                  <button
-                    onClick={() => getDrugDetails(item.drugName)}
-                    style={styles.button}
-                  >
-                    {item.drugName}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="container" style={{ paddingTop: '100px' }}>
+      <div className="card p-4 shadow-lg">
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h3 className="mb-0">List of Applications</h3>
+          <div>
+            <Link to="/adwelcome" className="btn btn-outline-secondary me-2">
+              <i className="bi bi-arrow-left me-1"></i> Back
+            </Link>
+            <button onClick={logOut} className="btn btn-outline-danger">
+              <i className="bi bi-box-arrow-left me-1"></i> Log Out
+            </button>
+          </div>
+        </div>
 
-        {drugDetails && (
-          <div style={styles.detailsContainer}>
-            <h4>Drug Details for {drugDetails.drugName}</h4>
-            <table>
-              <tbody>
-                <tr><td style={styles.detailLabel}>Drug Name:</td><td>{drugDetails.drugName}</td></tr>
-                <tr><td style={styles.detailLabel}>Description:</td><td>{drugDetails.drugDescription}</td></tr>
-                <tr><td style={styles.detailLabel}>Side Effects:</td><td>{drugDetails.commonSideEffect}</td></tr>
-                <tr><td style={styles.detailLabel}>Storage Temp:</td><td>{drugDetails.storageTemperature}</td></tr>
-                <tr>
-                  <td style={styles.detailLabel}>Clinical Trial Data:</td>
+        <div className="table-responsive">
+          <table className="table table-striped table-hover">
+            <thead className="table-primary">
+              <tr>
+                <th>Manufacturer Name</th>
+                <th>Drug Name</th>
+                <th>Status</th>
+                <th>Submission Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((item, index) => (
+                <tr key={index}>
+                  <td>{item.manufacturerName}</td>
+                  <td>{item.drugName}</td>
                   <td>
-                    <Link 
-                      to={{
-                        pathname: `/adhome/${encodeURIComponent(drugDetails.drugName)}`,
-                        state: { drugDetails } // Pass the drugDetails state
-                      }}
+                    <span className={`badge ${item.status === 'approved' ? 'bg-success' : item.status === 'rejected' ? 'bg-danger' : 'bg-warning'}`}>
+                      {item.status === 'approved' ? 'Approved' : item.status === 'rejected' ? 'Rejected' : 'Pending'}
+                    </span>
+                  </td>
+                  <td>{new Date(item.createdAt).toLocaleDateString()}</td>
+                  <td>
+                    <button
+                      onClick={() => getDrugDetails(item.drugName)}
+                      className="btn btn-sm btn-info me-2"
                     >
-                      <FontAwesomeIcon icon={faPaperPlane} style={styles.icon} />
+                      <i className="bi bi-info-circle me-1"></i> Details
+                    </button>
+                    <Link
+                      to={`/adhome/${encodeURIComponent(item.drugName)}`}
+                      className="btn btn-sm btn-primary"
+                    >
+                      <i className="bi bi-file-earmark-text me-1"></i> Review
                     </Link>
                   </td>
                 </tr>
-              </tbody>
-            </table>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {drugDetails && (
+          <div className="card mt-4 p-3 bg-light">
+            <h4 className="card-title">Drug Details for {drugDetails.drugName}</h4>
+            <div className="row">
+              <div className="col-md-6">
+                <table className="table table-bordered">
+                  <tbody>
+                    <tr>
+                      <th>Drug Name</th>
+                      <td>{drugDetails.drugName}</td>
+                    </tr>
+                    <tr>
+                      <th>Side Effects</th>
+                      <td>{drugDetails.commonSideEffect}</td>
+                    </tr>
+                    <tr>
+                      <th>Storage Temperature</th>
+                      <td>{drugDetails.storageTemperature}°C</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="col-md-6">
+                <div className="p-3 border rounded">
+                  <h5>Description</h5>
+                  <p style={{ whiteSpace: 'pre-line' }}>{drugDetails.drugDescription}</p>
+                </div>
+                <div className="mt-3 text-center">
+                  <Link
+                    to={`/adhome/${encodeURIComponent(drugDetails.drugName)}`}
+                    className="btn btn-primary"
+                  >
+                    <i className="bi bi-file-earmark-text me-1"></i> Review Clinical Trial Data
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
         )}
-
-        <button onClick={logOut} style={styles.logoutButton}>Log Out</button>
       </div>
     </div>
   );
 }
 
-
-const styles = {
-  authWrapper: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: "100vh",
-    backgroundColor: "#f4f4f4"
-  },
-  container: {
-    maxWidth: "900px",
-    padding: "20px",
-    backgroundColor: "white",
-    borderRadius: "10px",
-    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)"
-  },
-  heading: {
-    textAlign: "center",
-    fontWeight: "bold",
-    marginBottom: "20px",
-    color: "#333"
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    marginTop: "20px"
-  },
-  tableHeader: {
-    backgroundColor: "#007bff",
-    color: "white",
-    padding: "12px",
-    textAlign: "center"
-  },
-  tableRow: {
-    backgroundColor: "#f9f9f9"
-  },
-  tableCellBold: {
-    textAlign: "center",
-    fontWeight: "bold",
-    padding: "10px"
-  },
-  button: {
-    display: "block",
-    margin: "0 auto",
-    width: "200px",
-    height: "40px",
-    backgroundColor: "#007bff",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    transition: "0.3s"
-  },
-  buttonHover: {
-    backgroundColor: "#0056b3"
-  },
-  detailsContainer: {
-    marginTop: "20px",
-    padding: "15px",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    backgroundColor: "#f9f9f9"
-  },
-  detailLabel: {
-    fontWeight: "bold",
-    paddingRight: "10px"
-  },
-  icon: {
-    color: "#007bff",
-    fontSize: "16px"
-  },
-  logoutButton: {
-    display: "block",
-    width: "100%",
-    padding: "12px",
-    marginTop: "15px",
-    backgroundColor: "#dc3545",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    transition: "0.3s"
-  }
-};

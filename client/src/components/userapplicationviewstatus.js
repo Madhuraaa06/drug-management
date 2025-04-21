@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../App.css";
 
@@ -6,26 +6,73 @@ export default function UserApplicationViewStatus({ userData }) {
   const [drugName, setDrugName] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [statusMessage, setStatusMessage] = useState(""); // State for status message
+  const [manufacturerName, setManufacturerName] = useState("");
+
+  // Get user data on component mount
+  useEffect(() => {
+    fetch("http://localhost:5008/userData", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        token: window.localStorage.getItem("token"),
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.data && data.data.cname) {
+          setManufacturerName(data.data.cname);
+          // Automatically fetch applications for this manufacturer
+          fetchApplicationsByManufacturer(data.data.cname);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching user data:", error);
+      });
+  }, [])
+
+  const fetchApplicationsByManufacturer = async (manufacturer) => {
+    try {
+      setStatusMessage("Loading applications...");
+      const response = await axios.get(`http://localhost:5008/application-status/${manufacturer}`);
+
+      if (response.data.status === "ok" && response.data.applications.length > 0) {
+        setSearchResults(response.data.applications);
+        setStatusMessage(`Found ${response.data.applications.length} applications`);
+      } else {
+        setSearchResults([]);
+        setStatusMessage("No applications found for your company.");
+      }
+    } catch (error) {
+      console.error("Error fetching applications:", error);
+      setStatusMessage("Error retrieving applications.");
+    }
+  };
 
   const handleSearch = async () => {
     try {
+      if (!drugName.trim()) {
+        alert("Please enter a drug name to search");
+        return;
+      }
+
       const response = await axios.get("http://localhost:5008/applicationstatus", {
         params: { drugName }
       });
 
       if (response.data.status === "success") {
-        setSearchResults(response.data.data);
-        console.log(searchResults);
-        setStatusMessage("Data retrieved successfully."); // Set success message
+        setSearchResults([response.data.data]);
+        setStatusMessage("Data retrieved successfully.");
       } else {
-        setSearchResults([]); // Clear previous results if not found
-        setStatusMessage("No results found for the specified drug name."); // Set not found message
+        setSearchResults([]);
+        setStatusMessage("No results found for the specified drug name.");
       }
-      
+
       setDrugName(""); // Clear the search bar after performing the search
     } catch (error) {
       console.error("Error retrieving data:", error);
-      setStatusMessage("Error retrieving data."); // Set error message
+      setStatusMessage("Error retrieving data.");
     }
   };
 
@@ -53,9 +100,11 @@ export default function UserApplicationViewStatus({ userData }) {
 
           {statusMessage && <p>{statusMessage}</p>} {/* Display status message */}
 
+          <h3>Your Drug Applications</h3>
+
           {searchResults.length > 0 ? (
             <div>
-              <table className="table">
+              <table className="table table-striped">
                 <thead>
                   <tr>
                     <th>Manufacturer Name</th>
@@ -76,18 +125,28 @@ export default function UserApplicationViewStatus({ userData }) {
                       <td>{result.storageTemperature}</td>
                       <td>{result.drugDescription}</td>
                       <td>{result.commonSideEffect}</td>
-                      <td>{result.transactionHash}</td>
-                      <td>{result.status}</td>
-                      <td>{new Date(result.createdAt).toLocaleString()}</td> {/* Format date */}
+                      <td>
+                        {result.transactionHash ? (
+                          <span className="text-success">{result.transactionHash.substring(0, 10)}...</span>
+                        ) : (
+                          <span className="text-muted">Not available</span>
+                        )}
+                      </td>
+                      <td>
+                        <span className={`badge ${result.status === 'approved' ? 'bg-success' : result.status === 'rejected' ? 'bg-danger' : 'bg-warning'}`}>
+                          {result.status || 'pending'}
+                        </span>
+                      </td>
+                      <td>{new Date(result.createdAt).toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           ) : (
-            searchResults.length === 0 && !statusMessage.includes("Error") && (
-              <p>No results found.</p>
-            )
+            <div className="alert alert-info">
+              {statusMessage || "No applications found. Please submit a clinical trial application first."}
+            </div>
           )}
           <button onClick={logOut} className="btn btn-primary me-1">
             Log Out

@@ -9,6 +9,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 import Sidebar from "./components/sidebar"
@@ -23,6 +25,7 @@ import image from './fda-logo.png'
 import Home from './components/welcome_component'
 import AdminHome from './components/adminHome'
 import Dashboard from "./components/adminwelcome";
+import AdminMetrics from "./components/adminmetrics";
 import UserDashboard from "./components/userwelcome"
 import UserNav from "./components/usernavbar";
 import AdminNav from "./components/adminnavbar"
@@ -38,8 +41,10 @@ function App() {
       <div className="App">
       <nav className="navbar navbar-expand-lg navbar-light fixed-top">
           <div className="container-fluid">
-          <img src={image}  alt='FDA' className="imageLogo"/>
-            <Link className="navbar-brand" to={'/home'}>
+          <Link to={isLoggedIn === "true" ? '/userDetails' : '/home'}>
+            <img src={image} alt='FDA' className="imageLogo"/>
+          </Link>
+            <Link className="navbar-brand" to={isLoggedIn === "true" ? '/userDetails' : '/home'}>
               FOOD AND DRUG ADMINISTRATION
             </Link>
             <div className="collapse navbar-collapse" id="navbarTogglerDemo02">
@@ -72,7 +77,7 @@ function App() {
           <Route
             exact
             path="/"
-            element={isLoggedIn == "true" ? <UserDetails /> : <Login />}
+            element={isLoggedIn === "true" ? <UserDetails /> : <Login />}
           />
           <Route path="/home" element={<Home />} />
           <Route path="/sign-in" element={<Login />} />
@@ -83,6 +88,8 @@ function App() {
           <Route path="/userHome" element={<UserHome />} />
           <Route path="/adhome/:drugName" element={< AdminHome/>} />
           <Route path="/adwelcome" element={< Dashboard/>} />
+          <Route path="/admetrics" element={< AdminMetrics/>} />
+          <Route path="/user-dashboard" element={< UserDashboard/>} />
           <Route path="/userwelcome" element={< UserDashboard/>} />
           <Route path="/sidebar" element={< Sidebar/>} />
           <Route path="/usersidebar" element={< UserSidebar/>} />
@@ -94,6 +101,17 @@ function App() {
           <Route path="/userapplicationviewstatus" element={<UserApplicationViewStatus/>}/>
 
         </Routes>
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss={false}
+          draggable
+          pauseOnHover={false}
+        />
       </div>
     </Router>
   );

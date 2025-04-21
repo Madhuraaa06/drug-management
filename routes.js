@@ -16,7 +16,7 @@ function routes(app, db, accounts, contactList) {
             cb(null, file.fieldname + "-" + Date.now() + path.extname(file.originalname));}
     });
 
-    const upload = multer({ 
+    const upload = multer({
         storage,
         fileFilter: (req, file, cb) => {
             if (file.mimetype === 'text/csv' || file.mimetype === 'application/pdf') {
@@ -37,30 +37,88 @@ function routes(app, db, accounts, contactList) {
                 return res.status(400).json({ status: "error", message: "Invalid Admin" });
             }
 
-            // Store user data (will be replaced with MongoDB)
+            // Check if user already exists
+            try {
+                const existingUser = await db.collection('users').findOne({ email });
+                if (existingUser) {
+                    return res.status(400).json({ status: "error", message: "User already exists with this email" });
+                }
+            } catch (findError) {
+                console.error("Error checking for existing user:", findError);
+                // Continue with registration even if check fails
+            }
+
+            // Store user data in MongoDB
             const userData = {
-                fname, cname, email, password, userType,
+                fname,
+                cname,
+                email,
+                username: email, // Use email as username to avoid null value
+                password, // In production, hash this password
+                userType,
                 createdAt: new Date()
             };
 
-            res.json({ status: "ok", message: "Registration Successful" });
+            try {
+                await db.collection('users').insertOne(userData);
+                res.json({ status: "ok", message: "Registration Successful" });
+            } catch (insertError) {
+                // If there's a duplicate key error, try to update the existing user
+                if (insertError.code === 11000) {
+                    console.log("Duplicate key error, attempting to update user");
+                    // Generate a unique username if that's the issue
+                    if (insertError.keyPattern && insertError.keyPattern.username) {
+                        userData.username = email + '-' + Date.now();
+                    }
+
+                    try {
+                        // Try to insert with modified data
+                        await db.collection('users').insertOne(userData);
+                        res.json({ status: "ok", message: "Registration Successful" });
+                    } catch (finalError) {
+                        console.error("Final registration error:", finalError);
+                        res.status(500).json({ status: "error", message: "Registration failed after multiple attempts" });
+                    }
+                } else {
+                    throw insertError; // Re-throw if it's not a duplicate key error
+                }
+            }
         } catch (error) {
+            console.error("Registration error:", error);
             res.status(500).json({ status: "error", message: error.message });
         }
     });
 
     app.post("/login-user", async (req, res) => {
         try {
-            const { cname, email, password } = req.body;
-            
-            // In production, verify against database
-            const token = "Praveen"; // Replace with JWT
-            
+            const { email, password } = req.body;
+
+            // Find user in database by email
+            const user = await db.collection('users').findOne({
+                $or: [{ email }, { username: email }]
+            });
+
+            // Check if user exists and password matches
+            if (!user) {
+                return res.status(401).json({ status: "error", message: "Invalid email or password" });
+            }
+
+            // In production, compare hashed passwords
+            if (user.password !== password) {
+                return res.status(401).json({ status: "error", message: "Invalid email or password" });
+            }
+
+            // Generate token (in production, use JWT)
+            const token = "user-" + Date.now();
+
             res.json({
                 status: "ok",
-                data: token
+                data: token,
+                userType: user.userType,
+                cname: user.cname // Include company name for display
             });
         } catch (error) {
+            console.error("Login error:", error);
             res.status(500).json({ status: "error", message: error.message });
         }
     });
@@ -68,15 +126,21 @@ function routes(app, db, accounts, contactList) {
     app.post("/admin-login", async (req, res) => {
         try {
             const { email, password } = req.body;
-            
-            // In production, verify admin credentials
-            const token = "dummy-admin-token"; // Replace with JWT
-            
-            res.json({
-                status: "ok",
-                data: token
-            });
+
+            // For simplicity, hardcoded admin credentials
+            if (email === "admin" && password === "admin") {
+                const token = "admin-" + Date.now();
+
+                res.json({
+                    status: "ok",
+                    data: token,
+                    userType: "Admin"
+                });
+            } else {
+                res.status(401).json({ status: "error", message: "Invalid admin credentials" });
+            }
         } catch (error) {
+            console.error("Admin login error:", error);
             res.status(500).json({ status: "error", message: error.message });
         }
     });
@@ -84,18 +148,57 @@ function routes(app, db, accounts, contactList) {
     app.post("/userData", async (req, res) => {
         try {
             const { token } = req.body;
-            
-            // In production, verify token and get user data
-            const userData = {
-                fname: "Test User",
-                email: "test@example.com",
-                userType: "User"
-            };
-            
-            res.json({
-                data: userData
+
+            if (!token) {
+                return res.status(401).json({ data: "token expired" });
+            }
+
+            // Check if admin token
+            if (token.startsWith("admin-")) {
+                return res.json({
+                    data: {
+                        fname: "Admin",
+                        cname: "FDA",
+                        email: "admin@fda.gov",
+                        userType: "Admin"
+                    }
+                });
+            }
+
+            // For user tokens, try to find the user in the database
+            // In a real app, you would decode the JWT and extract the user ID
+            try {
+                // For demo purposes, just return the most recently created user
+                const user = await db.collection('users').findOne(
+                    { userType: "User" },
+                    { sort: { createdAt: -1 } }
+                );
+
+                if (user) {
+                    return res.json({
+                        data: {
+                            fname: user.fname,
+                            cname: user.cname,
+                            email: user.email,
+                            userType: user.userType
+                        }
+                    });
+                }
+            } catch (dbError) {
+                console.error("Database error:", dbError);
+            }
+
+            // Fallback to generic user data if no user found
+            return res.json({
+                data: {
+                    fname: "Test User",
+                    cname: "Test Company",
+                    email: "test@example.com",
+                    userType: "User"
+                }
             });
         } catch (error) {
+            console.error("User data error:", error);
             res.status(500).json({ data: "token expired" });
         }
     });
@@ -106,33 +209,33 @@ function routes(app, db, accounts, contactList) {
             if (!req.file) {
                 throw new Error('Please upload a CSV file');
             }
-    
-            const { 
-                manufacturerName, 
-                drugName, 
+
+            const {
+                manufacturerName,
+                drugName,
                 storageTemperature,
                 drugDescription,
                 commonSideEffect
             } = req.body;
-    
+
             // Check if any required field is missing
             if (!manufacturerName || !drugName || !storageTemperature || !drugDescription || !commonSideEffect) {
                 throw new Error('All fields must be provided');
             }
-    
+
             // Create drug record in blockchain
             const result = await contactList.methods.createContact(
                 manufacturerName,    //
-                drugName,            // 
-                drugDescription,  // 
-                commonSideEffect      // 
+                drugName,            //
+                drugDescription,  //
+                commonSideEffect      //
             ).send({
                 from: accounts[0],
                 gas: 3000000
             });
-            
+
             console.log("Transaction Hash:", result.transactionHash);  // For debugging
-    
+
             // Store in MongoDB with transaction hash
             const clinicalData = {
                 manufacturerName,
@@ -149,9 +252,9 @@ function routes(app, db, accounts, contactList) {
 console.log("Calling createContact with:", manufacturerName, drugName, drugDescription, commonSideEffect);
 console.log("Using Ethereum account:", accounts[0]);
 
-    
+
             await db.collection('clinicalTrials').insertOne(clinicalData);
-    
+
             res.json({
                 status: "ok",
                 message: "Clinical trial data uploaded successfully",
@@ -159,14 +262,14 @@ console.log("Using Ethereum account:", accounts[0]);
             });
         } catch (error) {
             console.error('Upload error:', error); // Log the error
-            res.status(500).json({ 
-                status: "error", 
-                message: error.message 
+            res.status(500).json({
+                status: "error",
+                message: error.message
             });
         }
     });
-    
-    
+
+
 
     // 3. Public Drug Search Route
     app.get("/drugs", async (req, res) => {
@@ -197,15 +300,15 @@ console.log("Using Ethereum account:", accounts[0]);
             if (!req.file) {
                 throw new Error('No file uploaded');
             }
-            res.json({ 
-                status: "ok", 
+            res.json({
+                status: "ok",
                 message: "File uploaded successfully",
                 path: req.file.path
             });
         } catch (error) {
-            res.status(500).json({ 
-                status: "error", 
-                message: error.message 
+            res.status(500).json({
+                status: "error",
+                message: error.message
             });
         }
     });
@@ -214,7 +317,7 @@ console.log("Using Ethereum account:", accounts[0]);
     app.get('/contacts', async (request, response) => {
         try {
             let cache = [];
-            
+
             const COUNTER = await contactList.methods.count().call();
             console.log('Total contacts:', COUNTER);
 
@@ -251,8 +354,8 @@ console.log("Using Ethereum account:", accounts[0]);
         try {
             const { drugName } = req.params;
             // Fetch from MongoDB
-            const clinicalData = await db.findOne({ drugName });
-            
+            const clinicalData = await db.collection('clinicalTrials').findOne({ drugName });
+
             res.json({
                 status: "ok",
                 data: clinicalData
@@ -265,19 +368,19 @@ console.log("Using Ethereum account:", accounts[0]);
     // Update/Reject Certificate
     app.post("/update-reject-certificate", async (req, res) => {
         try {
-            const { 
-                manufacturerName, 
-                drugName, 
-                updatereject, 
-                updatereason, 
-                rejectreason 
+            const {
+                manufacturerName,
+                drugName,
+                updatereject,
+                updatereason,
+                rejectreason
             } = req.body;
-    
+
             // Update in MongoDB
             const result = await db.collection('clinicalTrials').updateOne(
                 { manufacturerName, drugName },
-                { 
-                    $set: { 
+                {
+                    $set: {
                         status: updatereject ? 'approved' : 'rejected', // Change status to approved or rejected
                         updateReason: updatereject ? updatereason : null, // Set updateReason only if approved
                         rejectReason: !updatereject ? rejectreason : null, // Set rejectReason only if rejected
@@ -285,11 +388,11 @@ console.log("Using Ethereum account:", accounts[0]);
                     }
                 }
             );
-    
+
             if (result.modifiedCount === 0) {
                 throw new Error('Application not found');
             }
-    
+
             res.json({
                 status: "ok",
                 message: updatereject ? "Update approved" : "Application rejected"
@@ -298,27 +401,12 @@ console.log("Using Ethereum account:", accounts[0]);
             res.status(500).json({ status: "error", message: error.message });
         }
     });
-    
-    app.get('/getClinicalTrialData/:drugName', async (req, res) => {
-        try {
-          const { drugName } = req.params; // Get drugName from route parameters
-      
-          // Fetch clinical trial data from MongoDB
-          const clinicalTrialData = await db.collection('clinicalTrials').findOne({ drugName: drugName });
-      
-          if (clinicalTrialData) {
-            res.json({ status: "ok", data: clinicalTrialData });
-          } else {
-            res.json({ status: "not found", message: "No clinical trial data found for the specified drug." });
-          }
-        } catch (error) {
-          res.status(500).json({ status: "error", message: error.message });
-        }
-      });
+
+    // This route is already defined above
     // Get Applications
     app.get("/getApplication", async (req, res) => {
         try {
-            const applications = await db.collection("clinicalTrials").find({}).toArray();  
+            const applications = await db.collection("clinicalTrials").find({}).toArray();
             res.json({
                 status: "ok",
                 data: applications
@@ -327,23 +415,23 @@ console.log("Using Ethereum account:", accounts[0]);
             res.status(500).json({ status: "error", message: error.message });
         }
     });
-    
+
 
     // Get Drug Details
     app.get("/getDrugDetails/:drugName", async (req, res) => {
         try {
             const { drugName } = req.params;
-    
+
             // Get the 'clinicalTrials' collection from the database
             const collection = db.collection("clinicalTrials");
-    
+
             // Fetch drug details from MongoDB
             const drugDetails = await collection.findOne({ drugName: drugName });
-    
+
             if (!drugDetails) {
                 return res.status(404).json({ status: "error", message: "Drug not found" });
             }
-    
+
             res.json({
                 status: "ok",
                 data: drugDetails
@@ -352,16 +440,16 @@ console.log("Using Ethereum account:", accounts[0]);
             res.status(500).json({ status: "error", message: error.message });
         }
     });
-    
+
 
     // Get Application Status
     app.get("/applicationstatus", async (req, res) => {
         try {
             const { drugName } = req.query;
-    
+
             // Fetch application status from MongoDB
             const status = await db.collection('clinicalTrials').findOne({ drugName });
-    
+
             if (status) {
                 // Return the found document along with a success status
                 res.json({ status: "success", data: status });
@@ -373,12 +461,12 @@ console.log("Using Ethereum account:", accounts[0]);
             res.status(500).json({ status: "error", message: error.message });
         }
     });
-    
+
 
     app.get("/application-status/:manufacturerName", async (req, res) => {
         try {
             const { manufacturerName } = req.params;
-            
+
             const applications = await db.collection('clinicalTrials')
                 .find({ manufacturerName })
                 .toArray();

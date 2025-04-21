@@ -1,11 +1,56 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Web3 from "web3";
 import { CONTACT_ABI, CONTACT_ADDRESS } from "../config";
 import "../App.css";
+import { Link } from "react-router-dom";
 
 export default function UserApplicationStatus() {
   const [drugName, setDrugName] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [recentApplications, setRecentApplications] = useState([]);
+  const [manufacturerName, setManufacturerName] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Fetch user data and recent applications when component mounts
+  useEffect(() => {
+    const token = window.localStorage.getItem("token");
+    if (token) {
+      fetch("http://localhost:5008/userData", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.data && data.data.cname) {
+            setManufacturerName(data.data.cname);
+            fetchRecentApplications(data.data.cname);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching user data:", error);
+        });
+    }
+  }, []);
+
+  // Fetch recent applications for the current manufacturer
+  const fetchRecentApplications = async (name) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`http://localhost:5008/application-status/${encodeURIComponent(name)}`);
+      const data = await response.json();
+
+      if (data.status === "ok" && data.applications) {
+        setRecentApplications(data.applications);
+      }
+    } catch (error) {
+      console.error("Error fetching recent applications:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = async () => {
     try {
@@ -88,7 +133,14 @@ export default function UserApplicationStatus() {
 
   return (
     <div className="container" style={{ paddingTop: "100px" }}>
-      <div className="card p-4 shadow-lg">
+      {/* Back button */}
+      <div className="mb-4">
+        <Link to="/userDetails" className="btn btn-outline-secondary">
+          <i className="bi bi-arrow-left"></i> Back to Dashboard
+        </Link>
+      </div>
+
+      <div className="card p-4 shadow-lg mb-4">
         <h2 className="text-center">Drug Certification Search</h2>
         <div className="input-group mb-3">
           <input
@@ -111,6 +163,61 @@ export default function UserApplicationStatus() {
               ⚠️ Your Certificate is not approved yet. Check for updates.
             </div>
           )
+        )}
+      </div>
+
+      {/* Recent Applications Section */}
+      <div className="card p-4 shadow-lg">
+        <h2 className="text-center mb-4">Your Recent Applications</h2>
+
+        {loading ? (
+          <div className="text-center">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="mt-2">Loading your applications...</p>
+          </div>
+        ) : recentApplications.length > 0 ? (
+          <div className="table-responsive">
+            <table className="table table-striped table-hover">
+              <thead className="table-primary">
+                <tr>
+                  <th>Drug Name</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                  <th>Submission Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentApplications.map((app, index) => (
+                  <tr key={index}>
+                    <td>{app.drugName}</td>
+                    <td>{app.drugDescription?.substring(0, 50)}...</td>
+                    <td>
+                      <span className={`badge ${app.status === 'approved' ? 'bg-success' : app.status === 'rejected' ? 'bg-danger' : 'bg-warning'}`}>
+                        {app.status === 'approved' ? 'Approved' : app.status === 'rejected' ? 'Rejected' : 'Pending'}
+                      </span>
+                    </td>
+                    <td>{new Date(app.createdAt || Date.now()).toLocaleDateString()}</td>
+                    <td>
+                      <button
+                        className="btn btn-sm btn-info"
+                        onClick={() => setDrugName(app.drugName)}
+                      >
+                        Check Status
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="alert alert-info text-center">
+            <i className="bi bi-info-circle me-2"></i>
+            You haven't submitted any applications yet.
+          </div>
         )}
 
         {searchResults.length > 0 && (

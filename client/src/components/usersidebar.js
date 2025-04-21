@@ -17,29 +17,22 @@ function UserSidebar() {
             </div>
             <hr className='text-dark' />
             <div className='list-group list-group-flush'>
-                <a className='list-group-item py-2'>
+                <Link to="/userDetails" className='list-group-item py-2'>
                     <i className='bi bi-speedometer2 fs-5 me-3'></i>
                     <span>Dashboard</span>
-                </a>
-                <a className='list-group-item py-2 '>
+                </Link>
+                <Link to="/userHome" className='list-group-item py-2'>
                     <i className='bi bi-house fs-5 me-3'></i>
-                    <Link to="/userHome">
-                    <span >Apply for Certification</span>
-                    </Link>
-
-                </a>
-                <a className='list-group-item py-2'>
+                    <span>Apply for Certification</span>
+                </Link>
+                <Link to="/userapplicationstatus" className='list-group-item py-2'>
                     <i className='bi bi-table fs-5 me-3'></i>
-                    <Link to="/userapplicationstatus">
-                    <span >View Apllication Status</span>
-                    </Link>
-                </a>
-                <a className='list-group-item py-2'>
+                    <span>View Application Status</span>
+                </Link>
+                <Link to="/sign-in" className='list-group-item py-2'>
                     <i className='bi bi-power fs-5 me-3'></i>
-                    <Link to="/sign-in">
-                    <span >Logout</span>
-                    </Link>
-                </a>
+                    <span>Logout</span>
+                </Link>
             </div>
         </div>)
 }

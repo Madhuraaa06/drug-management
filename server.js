@@ -76,16 +76,19 @@ connectDB().then(() => {
                     const count = await contactList.methods.count().call();
                     res.json({ success: true, count: count });
                 } catch (error) {
-                    res.status(500).json({ 
-                        success: false, 
+                    res.status(500).json({
+                        success: false,
                         error: error.message,
-                        contractAddress: CONTACT_ADDRESS 
+                        contractAddress: CONTACT_ADDRESS
                     });
                 }
             });
 
             // Pass Mongoose connection to routes
             routes(app, mongoose.connection.db, accounts, contactList);
+
+            // Add direct registration endpoint
+            require('./register-user')(app);
 
         } catch (err) {
             console.error('❌ Server initialization error:', err);

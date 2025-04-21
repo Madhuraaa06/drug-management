@@ -31,7 +31,7 @@ export default function SignUp() {
     if (userType === "Admin" && secretKey !== "#$dk61918#") {
       alert("Invalid Admin");
     } else {
-      fetch("http://localhost:5008/register", {
+      fetch("http://localhost:5008/register-direct", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

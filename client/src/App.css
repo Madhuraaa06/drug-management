@@ -164,3 +164,218 @@
 .popup-content button {
   padding: 8px 16px;
 }
+
+/* Dashboard layout fixes */
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fix for admin dashboard */
+.admin-dashboard {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: white;
+}
+
+/* Sidebar styling */
+.admin-dashboard .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 16.666667%;
+  height: 100vh;
+  z-index: 1000;
+  overflow-y: auto;
+  background-color: #f8f9fa;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Main content with sidebar */
+.admin-dashboard .main-content {
+  margin-left: 16.666667%;
+  width: 83.333333%;
+  min-height: 100vh;
+  padding-top: 20px;
+  overflow-y: auto;
+  background-color: white;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* No sidebar layout */
+.admin-dashboard.no-sidebar .main-content {
+  margin-left: 0;
+  width: 100%;
+  padding-top: 20px;
+  min-height: 100vh;
+  overflow-y: auto;
+  background-color: white;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.fixed-top-nav {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 16.666667%;
+  z-index: 1000;
+  background-color: #007bff;
+  width: 83.333333%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  height: 60px;
+  display: flex;
+  align-items: center;
+}
+
+.fixed-top-nav.full-width {
+  left: 0;
+  width: 100%;
+}
+
+/* Scrollable content area */
+.scrollable-content {
+  overflow-y: auto;
+  padding-bottom: 30px;
+  padding-top: 0;
+  height: calc(100vh - 80px); /* Adjust based on your navbar height */
+}
+
+/* Non-scrollable content area */
+.fixed-content {
+  position: relative;
+  overflow-y: auto;
+  padding-top: 80px;
+}
+
+.admin-dashboard.no-sidebar .fixed-content {
+  padding-top: 80px;
+}
+
+/* Drug details page styling */
+.admin-dashboard .card-header.bg-primary {
+  background-color: #007bff !important;
+}
+
+.admin-dashboard .table th {
+  background-color: #f8f9fa;
+  width: 40%;
+}
+
+.admin-dashboard .badge.bg-success {
+  background-color: #28a745 !important;
+  color: white;
+  padding: 5px 10px;
+  font-size: 0.9rem;
+}
+
+.admin-dashboard .text-break {
+  word-break: break-all;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.admin-dashboard .card-body.p-4 {
+  background-color: white;
+}
+
+/* Full-width blue header for drug details */
+.admin-dashboard .container-fluid.pt-5.mt-4 {
+  padding-left: 0;
+  padding-right: 0;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.admin-dashboard .card.rounded.shadow-sm.mb-4 {
+  border: none;
+  border-radius: 8px;
+  margin-left: auto;
+  margin-right: auto;
+  overflow: hidden;
+}
+
+.admin-dashboard .card-header.bg-primary.text-white.text-center.py-3 {
+  background-color: #007bff !important;
+  border-radius: 0;
+}
+
+.admin-dashboard .btn-outline-primary {
+  color: #007bff;
+  border-color: #007bff;
+}
+
+.admin-dashboard .btn-outline-primary:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.admin-dashboard .btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.admin-dashboard .btn-warning {
+  background-color: #ffc107;
+  border-color: #ffc107;
+}
+
+.admin-dashboard .btn-outline-secondary {
+  color: #6c757d;
+  border-color: #6c757d;
+}
+
+.admin-dashboard .btn-outline-secondary:hover {
+  background-color: #6c757d;
+  color: white;
+}
+
+/* Equal height cards */
+.equal-height-cards .card {
+  height: 100%;
+}
+
+.equal-height-cards .col-md-4 {
+  display: flex;
+}
+
+.quick-action-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.quick-action-card .card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.quick-action-card .btn {
+  margin-top: auto;
+}
+
+/* Fix for gap between sidebar and content */
+.admin-dashboard .row.g-0 {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.admin-dashboard .container-fluid {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+
