@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import "../App.css";
 import { CONTACT_ABI, CONTACT_ADDRESS } from "../config";
 import { toast } from 'react-toastify';
+import axios from 'axios';
 
 export default function AdminHome({ userData }) {
   const { drugName } = useParams();
@@ -12,6 +13,10 @@ export default function AdminHome({ userData }) {
   const [popupMessage, setPopupMessage] = useState("");
   const [walletAccount, setWalletAccount] = useState('');
   const [ethBalance, setEthBalance] = useState(null);
+  const [showCsvModal, setShowCsvModal] = useState(false);
+  const [csvData, setCsvData] = useState([]);
+  const [csvHeaders, setCsvHeaders] = useState([]);
+  const [csvLoading, setCsvLoading] = useState(false);
 
   useEffect(() => {
     fetch(`http://localhost:5008/getClinicalTrialData/${encodeURIComponent(drugName)}`)
@@ -182,18 +187,68 @@ export default function AdminHome({ userData }) {
       // Using Link to navigate with state
       const encodedDrugName = encodeURIComponent(clinicalTrialData.drugName);
       window.location.href = `/update-reject?drugName=${encodedDrugName}`; // Add drug name to URL
-      // Alternatively, if using Link component:
-      // return (
-      //   <Link
-      //     to={{
-      //       pathname: '/update-reject',
-      //       state: { clinicalTrialData } // Pass the clinicalTrialData state
-      //     }}
-      //   >
-      //     Update/Reject Certificate
-      //   </Link>
-      // );
     }
+  };
+
+  const fetchCsvData = async () => {
+    if (!clinicalTrialData || !clinicalTrialData.csvFilePath) {
+      toast.error("CSV file path not available");
+      return;
+    }
+
+    setCsvLoading(true);
+    try {
+      // Get the CSV file from the server
+      const response = await axios.get(`http://localhost:5008/${clinicalTrialData.csvFilePath}`, {
+        responseType: 'text'
+      });
+
+      // Parse CSV data
+      const csvText = response.data;
+      const lines = csvText.split('\n');
+
+      // Extract headers (first line)
+      const headers = lines[0].split(',');
+      setCsvHeaders(headers);
+
+      // Extract data (remaining lines)
+      const data = [];
+      for (let i = 1; i < lines.length; i++) {
+        if (lines[i].trim() !== '') {
+          const values = lines[i].split(',');
+          const row = {};
+          for (let j = 0; j < headers.length; j++) {
+            row[headers[j]] = values[j];
+          }
+          data.push(row);
+        }
+      }
+
+      setCsvData(data);
+      setShowCsvModal(true);
+    } catch (error) {
+      console.error("Error fetching CSV file:", error);
+      toast.error("Failed to load CSV file. Please try again.");
+    } finally {
+      setCsvLoading(false);
+    }
+  };
+
+  const downloadCsv = () => {
+    if (!clinicalTrialData || !clinicalTrialData.csvFilePath) {
+      toast.error("CSV file path not available");
+      return;
+    }
+
+    // Create a download link
+    const link = document.createElement('a');
+    link.href = `http://localhost:5008/${clinicalTrialData.csvFilePath}`;
+    link.download = `${clinicalTrialData.drugName}_clinical_trial_data.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success("Download started");
   };
 
   return (
@@ -285,6 +340,21 @@ export default function AdminHome({ userData }) {
                           </div>
                           <div className="card-body">
                             <p><strong>CSV File:</strong> {clinicalTrialData.csvFilePath}</p>
+                            <div className="d-flex mb-3">
+                              <button
+                                onClick={fetchCsvData}
+                                className="btn btn-primary me-2"
+                                disabled={csvLoading}
+                              >
+                                <i className="bi bi-eye me-1"></i> View CSV Data
+                              </button>
+                              <button
+                                onClick={downloadCsv}
+                                className="btn btn-outline-primary"
+                              >
+                                <i className="bi bi-download me-1"></i> Download CSV
+                              </button>
+                            </div>
                             <p className="mb-0"><strong>Transaction Hash:</strong><br/>
                               <code className="text-break">{clinicalTrialData.transactionHash}</code>
                             </p>
@@ -332,6 +402,98 @@ export default function AdminHome({ userData }) {
         </div>
       </div>
       {showPopup && <PopupWindow message={popupMessage} onClose={closePopup} />}
+
+      {/* CSV Data Modal */}
+      {showCsvModal && (
+        <div className="modal-backdrop" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1050
+        }}>
+          <div className="modal-content" style={{
+            backgroundColor: 'white',
+            borderRadius: '10px',
+            width: '90%',
+            maxWidth: '1200px',
+            maxHeight: '90vh',
+            overflow: 'hidden',
+            boxShadow: '0 5px 15px rgba(0, 0, 0, 0.3)',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <div className="modal-header bg-primary text-white" style={{
+              padding: '15px 20px',
+              borderBottom: '1px solid #dee2e6',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              position: 'sticky',
+              top: 0,
+              zIndex: 10,
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}>
+              <h5 className="modal-title mb-0" style={{ fontWeight: 'bold' }}>Clinical Trial Data for {clinicalTrialData?.drugName}</h5>
+              <button
+                onClick={() => setShowCsvModal(false)}
+                className="btn-close btn-close-white"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  padding: '0',
+                  color: 'white'
+                }}
+              >
+                <i className="bi bi-x-lg"></i>
+              </button>
+            </div>
+            <div className="modal-body" style={{ padding: '20px', overflow: 'auto', flex: '1 1 auto' }}>
+              {csvLoading ? (
+                <div className="text-center p-5">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="mt-3">Loading CSV data...</p>
+                </div>
+              ) : (
+                <>
+                  <div className="table-responsive">
+                    <table className="table table-striped table-bordered">
+                      <thead>
+                        <tr className="bg-primary text-white">
+                          {csvHeaders.map((header, index) => (
+                            <th key={index} style={{ position: 'sticky', top: 0, backgroundColor: '#0d6efd', color: 'white', fontWeight: 'bold', textAlign: 'center' }}>
+                              {header}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {csvData.map((row, rowIndex) => (
+                          <tr key={rowIndex} className={rowIndex % 2 === 0 ? 'bg-light' : 'bg-white'}>
+                            {csvHeaders.map((header, colIndex) => (
+                              <td key={colIndex} style={{ padding: '10px', borderColor: '#dee2e6' }}>{row[header]}</td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
