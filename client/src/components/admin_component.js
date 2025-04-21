@@ -10,7 +10,7 @@ export default function Admin() {
 
     if (email === "admin" && password === "admin") {
       toast.success("Login successful");
-      localStorage.setItem("token", "admin-token"); // Simulating authentication token
+      localStorage.setItem("token", "admin-" + Date.now()); // Create a token with timestamp
       localStorage.setItem("loggedIn", true);
 
       // Use setTimeout to allow the toast to be visible before redirecting

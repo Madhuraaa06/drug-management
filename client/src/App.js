@@ -33,6 +33,7 @@ import AdminApplicationView from "./components/adminviewapplication"
 import AdminUpdate from "./components/adminupdate"
 import UserApplicationStatus from "./components/userapplicationstatus"
 import UserApplicationViewStatus from "./components/userapplicationviewstatus"
+import AdminDataManagement from "./components/adminDataManagement"
 
 function App() {
   const isLoggedIn = window.localStorage.getItem("loggedIn");
@@ -99,6 +100,7 @@ function App() {
           <Route path="/update-reject" element={<AdminUpdate/>}/>
           <Route path="/userapplicationstatus" element={<UserApplicationStatus/>}/>
           <Route path="/userapplicationviewstatus" element={<UserApplicationViewStatus/>}/>
+          <Route path="/admin-data-management" element={<AdminDataManagement/>}/>
 
         </Routes>
         <ToastContainer

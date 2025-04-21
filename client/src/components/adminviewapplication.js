@@ -138,6 +138,7 @@ export default function AdminApplicationView({ userData }) {
           justifyContent: 'center',
           zIndex: 1050
         }}>
+
           <div className="modal-content" style={{
             backgroundColor: 'white',
             borderRadius: '10px',
@@ -211,6 +212,8 @@ export default function AdminApplicationView({ userData }) {
           </div>
         </div>
       )}
+
+
     </div>
   );
 }

@@ -479,6 +479,7 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .action-btn {
@@ -495,6 +496,22 @@ html, body {
   font-weight: 500;
   font-size: 0.9rem;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  margin-bottom: 5px;
+}
+
+.action-btn i {
+  margin-right: 5px;
+}
+
+.action-btn.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.action-btn.btn-danger:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .action-btn:hover {
