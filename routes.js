@@ -108,8 +108,16 @@ function routes(app, db, accounts, contactList) {
                 return res.status(401).json({ status: "error", message: "Invalid email or password" });
             }
 
-            // Generate token (in production, use JWT)
-            const token = "user-" + Date.now();
+            // Generate token with user email embedded (in production, use JWT)
+            const token = "user-" + user.email + "-" + Date.now();
+
+            // Store token in database for verification
+            await db.collection('userTokens').insertOne({
+                token,
+                userId: user._id,
+                email: user.email,
+                createdAt: new Date()
+            });
 
             res.json({
                 status: "ok",
@@ -131,6 +139,14 @@ function routes(app, db, accounts, contactList) {
             if (email === "admin" && password === "admin") {
                 const token = "admin-" + Date.now();
 
+                // Store admin token in database
+                await db.collection('userTokens').insertOne({
+                    token,
+                    email: "admin@fda.gov",
+                    isAdmin: true,
+                    createdAt: new Date()
+                });
+
                 res.json({
                     status: "ok",
                     data: token,
@@ -141,6 +157,29 @@ function routes(app, db, accounts, contactList) {
             }
         } catch (error) {
             console.error("Admin login error:", error);
+            res.status(500).json({ status: "error", message: error.message });
+        }
+    });
+
+    // Logout endpoint to invalidate tokens
+    app.post("/logout", async (req, res) => {
+        try {
+            const { token } = req.body;
+
+            if (!token) {
+                return res.status(400).json({ status: "error", message: "Token is required" });
+            }
+
+            // Remove the token from the database
+            const result = await db.collection('userTokens').deleteOne({ token });
+
+            if (result.deletedCount === 0) {
+                return res.status(404).json({ status: "error", message: "Token not found" });
+            }
+
+            res.json({ status: "ok", message: "Logged out successfully" });
+        } catch (error) {
+            console.error("Logout error:", error);
             res.status(500).json({ status: "error", message: error.message });
         }
     });
@@ -165,14 +204,17 @@ function routes(app, db, accounts, contactList) {
                 });
             }
 
-            // For user tokens, try to find the user in the database
-            // In a real app, you would decode the JWT and extract the user ID
+            // For user tokens, find the associated user
             try {
-                // For demo purposes, just return the most recently created user
-                const user = await db.collection('users').findOne(
-                    { userType: "User" },
-                    { sort: { createdAt: -1 } }
-                );
+                // First, find the token in the userTokens collection
+                const tokenRecord = await db.collection('userTokens').findOne({ token });
+
+                if (!tokenRecord) {
+                    return res.status(401).json({ data: "token expired or invalid" });
+                }
+
+                // Then find the user with the email from the token record
+                const user = await db.collection('users').findOne({ email: tokenRecord.email });
 
                 if (user) {
                     return res.json({
@@ -183,9 +225,12 @@ function routes(app, db, accounts, contactList) {
                             userType: user.userType
                         }
                     });
+                } else {
+                    return res.status(404).json({ data: "user not found" });
                 }
             } catch (dbError) {
                 console.error("Database error:", dbError);
+                return res.status(500).json({ data: "database error" });
             }
 
             // Fallback to generic user data if no user found

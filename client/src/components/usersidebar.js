@@ -6,12 +6,29 @@ import "../sidebar.css";
 function UserSidebar() {
     const location = useLocation();
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         toast.info("Logging out...");
-        setTimeout(() => {
+        try {
+            const token = window.localStorage.getItem("token");
+            if (token) {
+                // Call the logout endpoint to invalidate the token
+                await fetch("http://localhost:5008/logout", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ token }),
+                });
+            }
+            // Clear local storage and redirect regardless of server response
             window.localStorage.clear();
             window.location.href = "/sign-in";
-        }, 1000);
+        } catch (error) {
+            console.error("Logout error:", error);
+            // Still clear local storage and redirect even if server call fails
+            window.localStorage.clear();
+            window.location.href = "/sign-in";
+        }
     };
 
     return (
